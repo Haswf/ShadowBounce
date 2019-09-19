@@ -2,6 +2,7 @@ import bagel.*;
 import bagel.util.Point;
 import bagel.util.Vector2;
 import java.util.Random;
+import bagel.util.Side;
 
 /**
  * An simple ball game.
@@ -43,7 +44,7 @@ public class ShadowBounce extends AbstractGame {
 
         // Randomly generate 50 pegs
         for (int i=0;i<numOfPegs;i++){
-            pegs[i] = new Peg(new Point(0, 0), new Image("res/blue-peg.png"), true);
+            pegs[i] = new Peg(new Point(0, 0), new Image("res/blue-peg.png"));
 
             // Choose position so the pegs don't overlap
             outer: while (true){
@@ -51,11 +52,10 @@ public class ShadowBounce extends AbstractGame {
                                         random.nextDouble()*(MAX_Y-MIN_Y)+MIN_Y);
                 pegs[i].setPosition(new Position(position, pegs[i].getImage().getWidth(), pegs[i].getImage().getHeight()));
                 for (int j=0; j<i; j++){
-                    double distance = pegs[j].distance(pegs[i]);
-                    double right = pegs[j].getBoundingBox().right();
-                    double left = pegs[j].getBoundingBox().left();
+                    double distance = pegs[j].getPosition().distance(pegs[i]);
+                    double minimum_dist = pegs[j].getImage().getWidth();
                     // if the distance between 2 pegs is smaller than 2*r where r is radius of the peg
-                    if (distance < right - left){
+                    if (distance < minimum_dist){
                         // generate a new position and try again.
                         continue outer;
                     }
@@ -116,10 +116,18 @@ public class ShadowBounce extends AbstractGame {
 
         for (int i=0;i<numOfPegs;i++){
             // Make the peg disappear if it was hit by the ball
-            if (ball.getBoundingBox().intersects(pegs[i].getBoundingBox())){
-                pegs[i].setVisibility(false);
+            if (ball.getCollider().collideWith(pegs[i])){
+                Side col = pegs[i].getCollider().collideAtSide(ball, ball.getVelocity());
+                if (col!=Side.NONE){
+                    if (col==Side.LEFT || col==Side.RIGHT){
+                        ball.setVelocity(ball.getVelocity().reverseHorizontal());
+                    }
+                    else {
+                            ball.setVelocity(ball.getVelocity().reverseVertical());
+                        }
+                    pegs[i].setVisibility(false);
+                }
             }
-            // render each peg
             pegs[i].render();
         }
     }

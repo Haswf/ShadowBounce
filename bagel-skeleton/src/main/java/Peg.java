@@ -9,17 +9,56 @@ import bagel.util.Point;
  * @author Shuyang Fan
  */
 
-
 public class Peg extends GameObject{
 
-    public Peg(){
-        super();
+    static enum COLOUR {
+        BLUE,
+        RED,
+        GREY,
+        GREEN,
+        NONE
+    };
+
+    static enum SHAPE{
+        NORMAL,
+        HORIZONTAL,
+        VERTICAL,
+        NONE
     }
-    public Peg(Point centre, Image image, Boolean visible){
-        super(centre, image, visible);
+
+    private SHAPE shape;
+    private COLOUR colour;
+
+    public Peg(Point centre, Image image){
+        super(centre, image);
+        this.setVisibility(true);
+        this.colour = COLOUR.BLUE;
+    }
+
+    public Peg(Point centre, Image image, SHAPE shape){
+        super(centre, image);
+        this.setVisibility(true);
+        this.setShape(shape);
+        this.setColour(COLOUR.BLUE);
     }
 
     public String toString(){
         return String.format("Peg at %f, %f", this.getPosition().getCentre().x, this.getPosition().getCentre().y);
+    }
+
+    public COLOUR getColour() {
+        return colour;
+    }
+
+    public void setColour(COLOUR colour) {
+        this.colour = colour;
+    }
+
+    public void setShape(SHAPE shape){
+        this.shape = shape;
+    }
+
+    public SHAPE getShape(){
+        return this.shape;
     }
 }

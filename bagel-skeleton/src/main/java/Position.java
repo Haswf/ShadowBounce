@@ -71,8 +71,8 @@ public class Position {
         return String.format("Point center at (%f, %f)", this.getCentre().x, this.getCentre().y);
     }
 
-    public static void main(String[] args){
-        Position position = new Position(new Point(50, 50), new Point(0, 0));
-        System.out.println(position.toString());
+    /* Return distance from this GameObject to another. */
+    public double distance(GameObject other){
+        return other.getPosition().getCentre().asVector().sub(this.getCentre().asVector()).length();
     }
 }

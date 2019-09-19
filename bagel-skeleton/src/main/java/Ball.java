@@ -1,5 +1,6 @@
 import bagel.*;
 import bagel.util.Point;
+import bagel.util.Side;
 
 /**
  * A class representing Ball for ShadowBounce.
@@ -36,5 +37,19 @@ public class Ball extends GameObject{
     public void recalculatePosition(){
         Point newCentre = (this.getPosition().getCentre().asVector()).add(this.velocity.asVector()).asPoint();
         this.setPosition(getPosition().setCentre(newCentre));
+    }
+
+    public void bounce(Side col){
+        if (col != Side.NONE) {
+            if (col == Side.LEFT || col == Side.RIGHT) {
+                setVelocity(getVelocity().reverseHorizontal());
+            } else {
+                setVelocity(getVelocity().reverseVertical());
+            }
+        }
+    }
+
+    public void reset(){
+
     }
 }
