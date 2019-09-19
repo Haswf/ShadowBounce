@@ -14,7 +14,6 @@ import bagel.util.Side;
 abstract public class GameObject implements Renderable{
     private Position position; // position of object on the screen
     private Image image; // image of the object
-    private boolean visibility;
     private Collider collider; // bounding box for collision detection
 
     public GameObject(){
@@ -22,19 +21,14 @@ abstract public class GameObject implements Renderable{
     }
 
     // constructor for GameObject where both position and image are provided.
-    public GameObject(Point centre, Image image) {
+    public GameObject(Point centre) {
         this.position = new Position(centre, image.getWidth(),image.getHeight());
-        this.image = image;
-        this.visibility = false; // by default, the object is set to invisible
-        // Move the bounding box to the correct position.
-        this.collider = new Collider(position, image);
     }
 
     // constructor for GameObject where position, image and visibility are provided.
-    public GameObject(Point centre, Image image, boolean visible) {
+    public GameObject(Point centre, Image image) {
         this.position = new Position(centre, image.getWidth(),image.getHeight());
         this.image = image;
-        this.visibility = visible;
         // Move the bounding box to the correct position.
         this.collider = new Collider(position, image);
     }
@@ -46,7 +40,6 @@ abstract public class GameObject implements Renderable{
             this.image = other.image;
             this.collider = new Collider(position, image);
         }
-        this.visibility = other.visibility;
     }
 
     /* Return the position of the GameObject as a Point.
@@ -73,16 +66,6 @@ abstract public class GameObject implements Renderable{
         this.image = newImage;
     }
 
-    /* Return an boolean representing visibility of the GameObject. */
-    public boolean getVisibility() {
-        return this.visibility;
-    }
-
-    /* Set visibility of the GameObject. The GameObject will be rendered if visibility is True. */
-    public void setVisibility(boolean visibility) {
-        this.visibility = visibility;
-    }
-
     /* Return the Bounding Box of the gameObject as a Rectangle*/
     public Collider getCollider() {
         return new Collider(this.collider);
@@ -101,11 +84,7 @@ abstract public class GameObject implements Renderable{
     /* Render the GameObject if its visibility is True */
     @ Override
     public void render() {
-        if (this.image == null){
-            return;
-        }
-
-        if (this.getVisibility()) {
+        if (this.image!=null){
             this.image.draw(this.getPosition().getCentre().x, this.getPosition().getCentre().y);
         }
     }

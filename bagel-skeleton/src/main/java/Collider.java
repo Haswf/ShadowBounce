@@ -24,24 +24,18 @@ public class Collider {
     }
 
     boolean collideWith(GameObject other){
-        if (other.getVisibility()){
-            return boundingBox.intersects(other.getCollider().getBoundingBox());
-        }
-        return false;
+        return boundingBox.intersects(other.getCollider().getBoundingBox());
     }
 
     Side collideAtSide(GameObject other, Velocity velocity){
-        if (other.getVisibility()){
-            Rectangle otherBoundingBox = other.getCollider().getBoundingBox();
-
-            Point[] corners = {otherBoundingBox.topLeft(), otherBoundingBox.topRight(),
+        Rectangle otherBoundingBox = other.getCollider().getBoundingBox();
+        Point[] corners = {otherBoundingBox.topLeft(), otherBoundingBox.topRight(),
                     otherBoundingBox.bottomLeft(), otherBoundingBox.bottomRight()};
 
-            Side colSide;
-            for (Point p : corners){
-                if ((colSide = this.getBoundingBox().intersectedAt(p, velocity.asVector()))!=Side.NONE){
-                    return colSide;
-                }
+        Side colSide;
+        for (Point p : corners){
+            if ((colSide = this.getBoundingBox().intersectedAt(p, velocity.asVector()))!=Side.NONE){
+                return colSide;
             }
         }
         return Side.NONE;

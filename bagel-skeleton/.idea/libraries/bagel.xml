@@ -1,7 +1,7 @@
 <component name="libraryTable">
-  <library name="bagel(3)">
+  <library name="bagel">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/../bagel(3).jar!/" />
+      <root url="jar://C:/SWEN20003Project1/bagel.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

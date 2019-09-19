@@ -9,21 +9,19 @@ import bagel.util.Point;
  * @author Shuyang Fan
  */
 
-public class Peg extends GameObject{
+abstract public class Peg extends GameObject{
 
     static enum COLOUR {
         BLUE,
         RED,
         GREY,
         GREEN,
-        NONE
     };
 
     static enum SHAPE{
         NORMAL,
         HORIZONTAL,
         VERTICAL,
-        NONE
     }
 
     private SHAPE shape;
@@ -31,19 +29,17 @@ public class Peg extends GameObject{
 
     public Peg(Point centre, Image image){
         super(centre, image);
-        this.setVisibility(true);
-        this.colour = COLOUR.BLUE;
     }
 
     public Peg(Point centre, Image image, SHAPE shape){
         super(centre, image);
-        this.setVisibility(true);
         this.setShape(shape);
-        this.setColour(COLOUR.BLUE);
     }
 
     public String toString(){
-        return String.format("Peg at %f, %f", this.getPosition().getCentre().x, this.getPosition().getCentre().y);
+        return String.format("%s %s Peg (%f, %f)", this.shape.toString().toLowerCase(),
+                this.colour.toString().toLowerCase(),
+                this.getPosition().getCentre().x, this.getPosition().getCentre().y);
     }
 
     public COLOUR getColour() {
@@ -60,5 +56,34 @@ public class Peg extends GameObject{
 
     public SHAPE getShape(){
         return this.shape;
+    }
+
+
+    public static String imagePath(Peg.COLOUR colour, Peg.SHAPE shape){
+        if (shape == SHAPE.NORMAL){
+            return "res/" + colour.toString().toLowerCase() + "-peg.png";
+        }
+        else{
+            return "res/" + colour.toString().toLowerCase() + "-" + shape.toString().toLowerCase() + "-peg.png";
+        }
+    }
+
+    public static Peg.COLOUR parseColor(String[] data){
+        for (Peg.COLOUR colour : Peg.COLOUR.values()){
+            if (data[0].contains(colour.toString().toLowerCase())){
+                return colour;
+            }
+        }
+        return Peg.COLOUR.BLUE;
+    }
+
+    public static Peg.SHAPE parseShape(String[] data){
+        String c;
+        for (Peg.SHAPE shape : Peg.SHAPE.values()){
+            if (data[0].contains(shape.toString().toLowerCase())){
+                return shape;
+            }
+        }
+        return Peg.SHAPE.NORMAL;
     }
 }

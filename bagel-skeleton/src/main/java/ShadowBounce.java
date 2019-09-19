@@ -1,8 +1,12 @@
 import bagel.*;
 import bagel.util.Point;
-import bagel.util.Vector2;
-import java.util.Random;
 import bagel.util.Side;
+import bagel.util.Vector2;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Random;
 
 /**
  * An simple ball game.
@@ -10,61 +14,37 @@ import bagel.util.Side;
  * @author Shuyang Fan
  */
 public class ShadowBounce extends AbstractGame {
-    private final Point initPosition;
-    private Ball ball;
-    private int numOfPegs = 50;
-    private Peg[] pegs;
-
-    // the range where peg will be randomly generated.
-    private static final double MIN_X = 0;
-    private static final double MAX_X = 1024;
-    private static final double MIN_Y = 100;
-    private static final double MAX_Y = 768;
 
     private static final double INIT_X = 512;
     private static final double INIT_Y = 32;
-
+    private final Point initPosition;
+    private ArrayList<Ball> balls;
     // Downward acceleration due to gravity
-    private double gravityAcceleartion;
+
     // initial speed of the ball
     private double initSpeed;
+    private Renderer renderer;
+    private ArrayList<Board> boards;
+    private Board currBoard;
+    private Iterator<Board> boardIter;
+    private int ballLeft = 20;
 
     /* ShadowBounce */
     public ShadowBounce() {
-        Random random = new Random(); // random generator to randomly place Peg
+        renderer = new Renderer();
+        boards = new ArrayList<>();
+        boards.add(new Board("board/0.csv"));
+        boards.add(new Board("board/0.csv"));
+
         initPosition = new Point(INIT_X, INIT_Y); // initial position where Ball will be generated
-        ball = new Ball(initPosition, new Image("res/ball.png"));
-        pegs = new Peg[numOfPegs]; // An array of pegs
-
-
-        // Acceleration due to gravity
-        gravityAcceleartion = 0.15;
         // initial speed of the ball
         initSpeed = 10;
-
-        // Randomly generate 50 pegs
-        for (int i=0;i<numOfPegs;i++){
-            pegs[i] = new Peg(new Point(0, 0), new Image("res/blue-peg.png"));
-
-            // Choose position so the pegs don't overlap
-            outer: while (true){
-                Point position = new Point(random.nextDouble()*MAX_X+MIN_X,
-                                        random.nextDouble()*(MAX_Y-MIN_Y)+MIN_Y);
-                pegs[i].setPosition(new Position(position, pegs[i].getImage().getWidth(), pegs[i].getImage().getHeight()));
-                for (int j=0; j<i; j++){
-                    double distance = pegs[j].getPosition().distance(pegs[i]);
-                    double minimum_dist = pegs[j].getImage().getWidth();
-                    // if the distance between 2 pegs is smaller than 2*r where r is radius of the peg
-                    if (distance < minimum_dist){
-                        // generate a new position and try again.
-                        continue outer;
-                    }
-                }
-                // if the peg won't overlap with any existing pegs, break
-                break;
-            }
-        }
+        boardIter = boards.iterator();
+        currBoard = boardIter.next();
+        renderer.addAll(currBoard.asList());
+        balls = new ArrayList<>();
     }
+
 
     /* The entry point for the program. */
     public static void main(String[] args) {
@@ -72,21 +52,30 @@ public class ShadowBounce extends AbstractGame {
         game.run();
     }
 
+    public void resetBall(Input input){
+        Ball ball = new Ball(initPosition, new Image("res/ball.png"));
+        ball.setPosition(ball.getPosition().setCentre(initPosition));;
+        Point mousePosition = input.getMousePosition();
+        // Calculate normal vector from init point to mouse position.
+        Vector2 mouseDirection = mousePosition.asVector().sub(initPosition.asVector()).normalised();
+        ball.setVelocity(new Velocity(mouseDirection, initSpeed));
+        balls.add(ball);
+    }
+
     /**
      * Performs a state update. This simple example shows an image that can be controlled with the arrow keys, and
      * allows the game to exit when the escape key is pressed.
      */
+
     @Override
     public void update(Input input) {
-        /* Make the ball start off moving towards the mouse if it's invisible */
-        if (input.isDown(MouseButtons.LEFT) && !ball.getVisibility()) {
-            ball.setPosition(ball.getPosition().setCentre(initPosition));;
-            Point mousePosition = input.getMousePosition();
-            // Calculate normal vector from init point to mouse position.
-            Vector2 mouseDirection = mousePosition.asVector().sub(initPosition.asVector()).normalised();
-            ball.setVelocity(new Velocity(mouseDirection, initSpeed));
-            // Make ball visible so it will be rendered in next frame.
-            ball.setVisibility(true);
+        ArrayList<GameObject> toBeDestroyed = new ArrayList<>();
+
+
+        if (input.isDown(MouseButtons.LEFT) && balls.size()==0 && ballLeft>0) {
+            ballLeft--;
+            resetBall(input);
+            renderer.addAll((List)balls);
         }
 
         // Quit game if ESCAPE key was pressed
@@ -95,40 +84,85 @@ public class ShadowBounce extends AbstractGame {
         }
 
         // Update the ball if it is visible.
-        if (ball.getVisibility()){
-            ball.recalculatePosition(); // recalculate position based on velocity
-            // increase vertical speed to simulate gravity if the Ball is visible.
-            ball.setVelocity(ball.getVelocity().add(Vector2.down.mul(gravityAcceleartion)));
-        }
-
-        // Reverse horizontal movement when the ball reaches the left or right sides.
-        if (ball.getPosition().getCentre().x < 0 || ball.getPosition().getCentre().x > Window.getWidth()){
-            ball.setVelocity(ball.getVelocity().reverseHorizontal());
-        }
-
-        // Make the ball invisible when it drops out of the window
-        if (ball.getPosition().getCentre().y > Window.getHeight()){
-            ball.setVisibility(false);
-        }
-
-        // Render the ball
-        ball.render();
-
-        for (int i=0;i<numOfPegs;i++){
-            // Make the peg disappear if it was hit by the ball
-            if (ball.getCollider().collideWith(pegs[i])){
-                Side col = pegs[i].getCollider().collideAtSide(ball, ball.getVelocity());
-                if (col!=Side.NONE){
-                    if (col==Side.LEFT || col==Side.RIGHT){
-                        ball.setVelocity(ball.getVelocity().reverseHorizontal());
-                    }
-                    else {
-                            ball.setVelocity(ball.getVelocity().reverseVertical());
-                        }
-                    pegs[i].setVisibility(false);
+        if (balls.size()>0){
+            for (Ball ball : balls){
+                ball.update();
+                // Reverse horizontal movement when the ball reaches the left or right sides.
+                if (ball.getPosition().getCentre().x < 0 || ball.getPosition().getCentre().x > Window.getWidth()){
+                    ball.setVelocity(ball.getVelocity().reverseHorizontal());
+                }
+                if (ball.getPosition().getCentre().y > Window.getHeight()){
+                    toBeDestroyed.add(ball);
                 }
             }
-            pegs[i].render();
         }
+
+        if (balls.size()>0){
+            for (Ball ball : balls){
+                Iterator<LinkedList<Peg>> it = currBoard.iterPegs();
+                while (it.hasNext()) {
+                    LinkedList<Peg> list = it.next();
+                    for (Iterator<Peg> iterator = list.iterator(); iterator.hasNext(); ) {
+                        Peg p = iterator.next();
+                        if (ball.getCollider().collideWith(p)) {
+                            Side col = p.getCollider().collideAtSide(ball, ball.getVelocity());
+                            ball.bounce(col);
+                            if (p.getColour() != Peg.COLOUR.GREY){
+                                toBeDestroyed.add(p);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+
+        for (GameObject p : toBeDestroyed){
+            if (p instanceof BluePeg){
+                currBoard.destroy(p);
+            }
+            if (p instanceof GreenPeg){
+                currBoard.destroy(p);
+                balls.addAll(((GreenPeg) p).duplicate(balls.get(0)));
+                renderer.addAll((List)balls);
+            }
+            if (p instanceof Ball){
+                balls.remove(p);
+            }
+        }
+
+        renderer.removeAll(toBeDestroyed);
+        toBeDestroyed.clear();
+
+        if (balls.size()==0) {
+            turnEnd();
+        }
+
+        if (currBoard.getRedCount() == 0){
+            loadNextBoard();
+        }
+
+        if (ballLeft==0){
+            Image gg = new Image("res/gameover.png");
+            gg.draw(Window.getWidth()/2, Window.getWidth()/2);
+        }
+
+
+        renderer.render();
+
+    }
+
+    public void loadNextBoard() {
+        if (boardIter.hasNext()) {
+            currBoard = boardIter.next();
+            renderer.clear();
+            renderer.addAll(currBoard.asList());
+        }
+    }
+
+    public void turnEnd(){
+        renderer.clear();
+        currBoard.refreshGreenPeg();
+        renderer.addAll(currBoard.asList());
     }
 }
