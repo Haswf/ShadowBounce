@@ -11,14 +11,14 @@ import bagel.util.Point;
 
 abstract public class Peg extends GameObject{
 
-    static enum COLOUR {
+    public static enum COLOUR {
         BLUE,
         RED,
         GREY,
         GREEN,
     };
 
-    static enum SHAPE{
+   public static enum SHAPE{
         NORMAL,
         HORIZONTAL,
         VERTICAL,

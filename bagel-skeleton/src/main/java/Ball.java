@@ -8,15 +8,12 @@ import bagel.util.Vector2;
  *
  * @author Shuyang Fan
  */
-public class Ball extends GameObject{
+public class Ball extends GameObject implements Movable{
+    public static final Point INIT_POSITION = new Point(512, 32);
+    public static final double INIT_SPEED = 10.0;
     private Velocity velocity;
     // Acceleration due to gravity
     private static final double gravityAcceleration = 0.15;
-
-    /* Basic constructor for Ball where velocity is not provided. */
-    public Ball(Point centre, Image image){
-        super(centre, image);
-    }
 
     /* Constructor for Ball with a given velocity */
     public Ball(Point centre, Image image, Velocity velocity){
@@ -34,14 +31,6 @@ public class Ball extends GameObject{
         this.velocity = newVelocity;
     }
 
-    /* Recalculate the position of the Ball based on its current velocity.
-       This method should be called exactly once every frame.
-    */
-    public void recalculatePosition(){
-        Point newCentre = (this.getPosition().getCentre().asVector()).add(this.velocity.asVector()).asPoint();
-        this.setPosition(getPosition().setCentre(newCentre));
-    }
-
     private void gravity(){
         // increase vertical speed to simulate gravity if the Ball is visible.
         this.setVelocity(this.getVelocity().add(Vector2.down.mul(gravityAcceleration)));
@@ -57,10 +46,15 @@ public class Ball extends GameObject{
         }
     }
 
-    public void update(){
+    @Override
+    public void move(){
         if (this.velocity != null) {
-            recalculatePosition();
+            Point newCentre = (this.getPosition().getCentre().asVector()).add(this.velocity.asVector()).asPoint();
+            this.setPosition(getPosition().setCentre(newCentre));
             gravity();
+        }
+        if (this.getPosition().getCentre().x < 0 || this.getPosition().getCentre().x > Window.getWidth()) {
+            this.setVelocity(this.getVelocity().reverseHorizontal());
         }
     }
 }

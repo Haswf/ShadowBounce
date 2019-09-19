@@ -18,7 +18,7 @@ public class GreenPeg extends Peg {
 
     public ArrayList<Ball> duplicate(Ball incoming){
         ArrayList<Ball> dups = new ArrayList<>();
-        double speed = 10.0;
+        double speed = 10.0/60;
 
         dups.add(new Ball(this.getPosition().getCentre(), incoming.getImage(),
                 new Velocity(Vector2.up.add(Vector2.left), speed)));

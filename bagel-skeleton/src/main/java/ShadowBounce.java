@@ -2,11 +2,11 @@ import bagel.*;
 import bagel.util.Point;
 import bagel.util.Side;
 import bagel.util.Vector2;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Random;
+
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.logging.*;
 
 /**
  * An simple ball game.
@@ -14,16 +14,16 @@ import java.util.Random;
  * @author Shuyang Fan
  */
 public class ShadowBounce extends AbstractGame {
-
-    private static final double INIT_X = 512;
-    private static final double INIT_Y = 32;
-    private final Point initPosition;
+    private final static Logger LOGGER =
+            Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+    private Random random;
     private ArrayList<Ball> balls;
-    // Downward acceleration due to gravity
 
-    // initial speed of the ball
-    private double initSpeed;
+    private ArrayList<Powerup> powerups;
     private Renderer renderer;
+
+    private Bucket bucket;
+
     private ArrayList<Board> boards;
     private Board currBoard;
     private Iterator<Board> boardIter;
@@ -31,18 +31,24 @@ public class ShadowBounce extends AbstractGame {
 
     /* ShadowBounce */
     public ShadowBounce() {
+        random = new Random();
+
         renderer = new Renderer();
+
         boards = new ArrayList<>();
         boards.add(new Board("board/0.csv"));
         boards.add(new Board("board/0.csv"));
-
-        initPosition = new Point(INIT_X, INIT_Y); // initial position where Ball will be generated
-        // initial speed of the ball
-        initSpeed = 10;
         boardIter = boards.iterator();
         currBoard = boardIter.next();
-        renderer.addAll(currBoard.asList());
+
+        bucket = new Bucket();
+        renderer.add(bucket);
+
+        powerups = new ArrayList<>();
+        generatePowerup();
+
         balls = new ArrayList<>();
+        renderer.addAll(currBoard.asList());
     }
 
 
@@ -53,12 +59,12 @@ public class ShadowBounce extends AbstractGame {
     }
 
     public void resetBall(Input input){
-        Ball ball = new Ball(initPosition, new Image("res/ball.png"));
-        ball.setPosition(ball.getPosition().setCentre(initPosition));;
+        Ball ball = new Ball(Ball.INIT_POSITION, new Image("res/ball.png"), new Velocity());
+        ball.setPosition(ball.getPosition().setCentre(Ball.INIT_POSITION));;
         Point mousePosition = input.getMousePosition();
         // Calculate normal vector from init point to mouse position.
-        Vector2 mouseDirection = mousePosition.asVector().sub(initPosition.asVector()).normalised();
-        ball.setVelocity(new Velocity(mouseDirection, initSpeed));
+        Vector2 mouseDirection = mousePosition.asVector().sub(Ball.INIT_POSITION.asVector()).normalised();
+        ball.setVelocity(new Velocity(mouseDirection, Ball.INIT_SPEED));
         balls.add(ball);
     }
 
@@ -69,11 +75,10 @@ public class ShadowBounce extends AbstractGame {
 
     @Override
     public void update(Input input) {
+        boolean turnEnd = false;
         ArrayList<GameObject> toBeDestroyed = new ArrayList<>();
 
-
         if (input.isDown(MouseButtons.LEFT) && balls.size()==0 && ballLeft>0) {
-            ballLeft--;
             resetBall(input);
             renderer.addAll((List)balls);
         }
@@ -83,50 +88,81 @@ public class ShadowBounce extends AbstractGame {
             Window.close();
         }
 
-        // Update the ball if it is visible.
-        if (balls.size()>0){
-            for (Ball ball : balls){
-                ball.update();
-                // Reverse horizontal movement when the ball reaches the left or right sides.
-                if (ball.getPosition().getCentre().x < 0 || ball.getPosition().getCentre().x > Window.getWidth()){
-                    ball.setVelocity(ball.getVelocity().reverseHorizontal());
-                }
-                if (ball.getPosition().getCentre().y > Window.getHeight()){
-                    toBeDestroyed.add(ball);
-                }
-            }
-        }
-
-        if (balls.size()>0){
-            for (Ball ball : balls){
-                Iterator<LinkedList<Peg>> it = currBoard.iterPegs();
-                while (it.hasNext()) {
-                    LinkedList<Peg> list = it.next();
-                    for (Iterator<Peg> iterator = list.iterator(); iterator.hasNext(); ) {
-                        Peg p = iterator.next();
-                        if (ball.getCollider().collideWith(p)) {
-                            Side col = p.getCollider().collideAtSide(ball, ball.getVelocity());
-                            ball.bounce(col);
-                            if (p.getColour() != Peg.COLOUR.GREY){
-                                toBeDestroyed.add(p);
-                            }
+        Iterator<GameObject> queueIter = renderer.getQueue().iterator();
+        while (queueIter.hasNext()) {
+            GameObject obj = queueIter.next();
+            if (obj instanceof Peg) {
+                Peg peg = (Peg)obj;
+                for (Ball ball : balls) {
+                    if (ball instanceof FireBall && peg.getPosition().distance(ball) < FireBall.DESTROY_RANGE){
+                        toBeDestroyed.add(peg);
+                        currBoard.destroy(peg);
+                    }
+                    else if (ball.getCollider().collideWith(peg)) {
+                        Side col = peg.getCollider().collideAtSide(ball, ball.getVelocity());
+                        ball.bounce(col);
+                        if (peg.getColour() != Peg.COLOUR.GREY) {
+                            toBeDestroyed.add(peg);
+                            currBoard.destroy(peg);
                         }
                     }
                 }
             }
-        }
+            else if (obj instanceof Ball) {
+                Ball ball = (Ball) obj;
+                ball.move();
+                if (ball.getPosition().getCentre().y > Window.getHeight()) {
+                    if (ball.getCollider().collideWith(bucket)){
+                        ballLeft++;
+                        LOGGER.log(Level.INFO, "ballLeft + 1");
+                    }
+                    toBeDestroyed.add(ball);
+                }
+            }
 
+            else if (obj instanceof Bucket){
+                bucket.move();
+                Bucket bucket = (Bucket)obj;
+            }
+
+            else if (obj instanceof Powerup){
+                Powerup up = (Powerup)obj;
+                up.move();
+                FireBall fb = null;
+                for (Ball ball : balls) {
+                    if (ball.getCollider().collideWith(up)) {
+                        toBeDestroyed.add(up);
+                        fb = up.activate(ball);
+                        toBeDestroyed.add(ball);
+
+                        renderer.add(fb);
+                        LOGGER.log(Level.INFO, "Powerup hit\n");
+                    }
+                }
+                if (fb != null){
+                    balls.add(fb);
+                }
+            }
+        }
 
         for (GameObject p : toBeDestroyed){
             if (p instanceof BluePeg){
                 currBoard.destroy(p);
             }
+            if (p instanceof RedPeg){
+                currBoard.destroy(p);
+                LOGGER.log(Level.INFO, String.format("Red ball destroyed. %d left\n", currBoard.getRedCount()));
+            }
             if (p instanceof GreenPeg){
                 currBoard.destroy(p);
                 balls.addAll(((GreenPeg) p).duplicate(balls.get(0)));
+                LOGGER.log(Level.INFO, "Bonus balls released\n");
                 renderer.addAll((List)balls);
             }
             if (p instanceof Ball){
+                if (balls.size() == 1){
+                    turnEnd = true;
+                }
                 balls.remove(p);
             }
         }
@@ -134,19 +170,23 @@ public class ShadowBounce extends AbstractGame {
         renderer.removeAll(toBeDestroyed);
         toBeDestroyed.clear();
 
-        if (balls.size()==0) {
-            turnEnd();
+//        if (ballLeft==0){
+//            Image gg = new Image("res/gameover.png");
+//            gg.draw(Window.getWidth()/2, Window.getWidth()/2);
+//        }
+
+        if (turnEnd){
+            ballLeft--;
+            LOGGER.log(Level.INFO, String.format("New turn started. %d balls left\n", ballLeft));
+            renderer.removeAll(currBoard.asList());
+            generatePowerup();
+            currBoard.refreshGreenPeg();
+            renderer.addAll(currBoard.asList());
         }
 
         if (currBoard.getRedCount() == 0){
             loadNextBoard();
         }
-
-        if (ballLeft==0){
-            Image gg = new Image("res/gameover.png");
-            gg.draw(Window.getWidth()/2, Window.getWidth()/2);
-        }
-
 
         renderer.render();
 
@@ -154,15 +194,19 @@ public class ShadowBounce extends AbstractGame {
 
     public void loadNextBoard() {
         if (boardIter.hasNext()) {
+            balls.clear();
+            renderer.removeAll(currBoard.asList());
             currBoard = boardIter.next();
-            renderer.clear();
             renderer.addAll(currBoard.asList());
+            LOGGER.log(Level.INFO, "New board loaded\n");
         }
     }
 
-    public void turnEnd(){
-        renderer.clear();
-        currBoard.refreshGreenPeg();
-        renderer.addAll(currBoard.asList());
+    public void generatePowerup(){
+        if (random.nextDouble() < Powerup.CHANCE){
+            Powerup up = new Powerup();
+            powerups.add(up);
+            renderer.add(up);
+        }
     }
 }

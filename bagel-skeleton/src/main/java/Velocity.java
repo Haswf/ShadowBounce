@@ -11,6 +11,10 @@ public class Velocity {
     private Vector2 direction;
     private double speed;
 
+    public Velocity(){
+        this.direction = Vector2.left;
+        this.speed = 0;
+    }
     /*
      Create a velocity object  with a given direction and speed
      */

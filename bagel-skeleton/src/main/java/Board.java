@@ -118,18 +118,6 @@ public class Board{
         return list;
     }
 
-//    @Override
-//    public void render() {
-//        for (Peg.COLOUR ty : Peg.COLOUR.values()) {
-//            LinkedList<Peg> pegList = this.pegs.get(ty);
-//            if (pegList!=null){
-//                for (Peg p : pegList){
-//                    p.render();
-//                }
-//            }
-//        }
-//    }
-
     public Iterator<LinkedList<Peg>> iterPegs(){
         return this.pegs.values().iterator();
     }

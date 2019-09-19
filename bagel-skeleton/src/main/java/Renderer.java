@@ -2,11 +2,15 @@ import java.util.*;
 
 public class Renderer{
     private boolean enabled;
-    private Set<GameObject> renderQueue;
+    private LinkedHashSet<GameObject> renderQueue;
 
     public Renderer(){
         enabled = true;
         renderQueue = new LinkedHashSet<GameObject>();
+    }
+
+    public LinkedHashSet<GameObject> getQueue(){
+        return new LinkedHashSet<>(renderQueue);
     }
 
     public void render() {

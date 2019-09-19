@@ -8,7 +8,10 @@ public class Position {
 
     public Position(){
         this.centre = new Point(0,0);
-        this.topLeft = new Point(0,0);
+    }
+
+    public Position(Point centre){
+        this.centre = centre;
     }
 
     public Position(Point centre, Point topLeft){
@@ -75,4 +78,15 @@ public class Position {
     public double distance(GameObject other){
         return other.getPosition().getCentre().asVector().sub(this.getCentre().asVector()).length();
     }
+
+    /* Return distance from this GameObject to a point. */
+    public double distance(Point other){
+        return other.asVector().sub(this.getCentre().asVector()).length();
+    }
+
+    /* Return distance from this GameObject to another Position. */
+    public double distance(Position other){
+        return other.getCentre().asVector().sub(this.getCentre().asVector()).length();
+    }
+
 }

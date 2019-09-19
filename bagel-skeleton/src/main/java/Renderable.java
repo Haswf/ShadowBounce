@@ -1,3 +1,3 @@
 public interface Renderable {
-    abstract void render();
+    void render();
 }
