@@ -184,13 +184,13 @@ public class ShadowBounce extends AbstractGame {
         if (currBoard.getRedCount() == 0){
             loadNextBoard();
         }
-
         renderer.render();
 
     }
 
     public void loadNextBoard() {
         if (boardIter.hasNext()) {
+            renderer.removeAll((List)balls);
             balls.clear();
             renderer.removeAll(currBoard.asList());
             currBoard = boardIter.next();
