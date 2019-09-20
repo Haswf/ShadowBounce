@@ -11,9 +11,10 @@ import bagel.util.Vector2;
 public class Ball extends GameObject implements Movable{
     public static final Point INIT_POSITION = new Point(512, 32);
     public static final double INIT_SPEED = 10.0;
-    private Velocity velocity;
     // Acceleration due to gravity
-    private static final double gravityAcceleration = 0.15;
+    public static final double GRAVITY = 0.15;
+    private Velocity velocity;
+
 
     /* Constructor for Ball with a given velocity */
     public Ball(Point centre, Image image, Velocity velocity){
@@ -31,9 +32,9 @@ public class Ball extends GameObject implements Movable{
         this.velocity = newVelocity;
     }
 
-    private void gravity(){
+    private void applyGravity(){
         // increase vertical speed to simulate gravity if the Ball is visible.
-        this.setVelocity(this.getVelocity().add(Vector2.down.mul(gravityAcceleration)));
+        this.setVelocity(this.getVelocity().add(Vector2.down.mul(GRAVITY)));
     }
 
     public void bounce(Side col){
@@ -51,7 +52,7 @@ public class Ball extends GameObject implements Movable{
         if (this.velocity != null) {
             Point newCentre = (this.getPosition().getCentre().asVector()).add(this.velocity.asVector()).asPoint();
             this.setPosition(getPosition().setCentre(newCentre));
-            gravity();
+            applyGravity();
         }
         if (this.getPosition().getCentre().x < 0 || this.getPosition().getCentre().x > Window.getWidth()) {
             this.setVelocity(this.getVelocity().reverseHorizontal());

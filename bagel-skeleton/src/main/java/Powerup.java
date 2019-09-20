@@ -9,8 +9,9 @@ public class Powerup extends GameObject implements Movable {
     public static final double CHANCE = 0.1;
     public static final int MIN_DISTANCE = 5;
     public static final int SPEED = 3;
-    Velocity velocity;
-    Position destination;
+    private Velocity velocity;
+    private Position destination;
+
     public Powerup(){
         super(nextPoint(), new Image("res/powerup.png"));
         destination = new Position(nextPoint());
@@ -27,7 +28,7 @@ public class Powerup extends GameObject implements Movable {
         this.velocity = newVelocity;
     }
 
-    public static Point nextPoint(){
+    private static Point nextPoint(){
         Random random = new Random();
         return new Point(random.nextInt(Window.getWidth()), random.nextInt(Window.getHeight()));
     }
@@ -42,7 +43,7 @@ public class Powerup extends GameObject implements Movable {
         }
     }
 
-    public FireBall activate(Ball hit){
-        return new FireBall(hit);
+    public FireBall activate(Ball incoming){
+        return new FireBall(incoming);
     }
 }

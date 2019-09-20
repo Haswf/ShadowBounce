@@ -6,7 +6,7 @@ import bagel.Image;
 import bagel.util.Point;
 
 public class Board{
-    public Map<Peg.COLOUR, LinkedList<Peg>> pegs;
+    private Map<Peg.COLOUR, LinkedList<Peg>> pegs;
 
     public Board(String pathToCsv){
         pegs = new LinkedHashMap<Peg.COLOUR, LinkedList<Peg>>();
@@ -15,7 +15,7 @@ public class Board{
         createGreenBall();
     }
 
-    public void readFromCSV(String pathToCsv){
+    private void readFromCSV(String pathToCsv){
         try{
             BufferedReader csvReader = new BufferedReader(new FileReader(pathToCsv));
             String row;
@@ -29,7 +29,7 @@ public class Board{
         }
     }
 
-    private void add(Peg p){
+    public void add(Peg p){
         Peg.COLOUR colour = p.getColour();
         LinkedList<Peg> pegList = this.pegs.get(colour);
 
@@ -51,7 +51,7 @@ public class Board{
         return pegs.get(Peg.COLOUR.RED).size();
     }
 
-    private void remove(Peg p){
+    public void remove(Peg p){
         Peg.COLOUR colour = p.getColour();
         LinkedList<Peg> pegList = this.pegs.get(colour);
         pegList.remove(p);
@@ -68,7 +68,7 @@ public class Board{
         int total = bluePeg.size()/15;
         for (int i=0; i<total; i++){
             Peg choice = getBlue(bluePeg);
-            RedPeg converted = RedPeg.convertToRed(choice);
+            RedPeg converted = RedPeg.toRedPeg(choice);
             add(converted);
             bluePeg.remove(choice);
         }
@@ -76,25 +76,24 @@ public class Board{
 
     private void createGreenBall(){
         Peg choice = getBlue(pegs.get(Peg.COLOUR.BLUE));
-        GreenPeg converted = GreenPeg.convertToGreen(choice);
+        GreenPeg converted = GreenPeg.toGreenPeg(choice);
         add(converted);
         remove(choice);
     }
 
     public void refreshGreenPeg(){
-        if (pegs.get(Peg.COLOUR.GREEN).size()>0){
+        if (getGreenCount()>0){
             Peg green = pegs.get(Peg.COLOUR.GREEN).getFirst();
-            BluePeg converted = BluePeg.convertToBlue(green);
+            BluePeg converted = BluePeg.toBluePeg(green);
             add(converted);
             remove(green);
         }
         createGreenBall();
     }
 
-
     private Peg createPeg(String[] data) {
-        Peg.COLOUR colour = Peg.parseColor(data);
-        Peg.SHAPE shape = Peg.parseShape(data);
+        Peg.COLOUR colour = Peg.parseColor(data[0]);
+        Peg.SHAPE shape = Peg.parseShape(data[0]);
         String imagePath = Peg.imagePath(colour, shape);
         double x = Double.parseDouble(data[1]);
         double y = Double.parseDouble(data[2]);
@@ -118,16 +117,7 @@ public class Board{
         return list;
     }
 
-    public Iterator<LinkedList<Peg>> iterPegs(){
-        return this.pegs.values().iterator();
-    }
-
-    public void destroy(GameObject go) {
-        if (go instanceof Peg){
-            Peg p = (Peg) go;
-            Peg.COLOUR colour = p.getColour();
-            LinkedList<Peg> pegList = this.pegs.get(colour);
-            pegList.remove(p);
-        }
-    }
+//    public Iterator<LinkedList<Peg>> iterPegs(){
+//        return this.pegs.values().iterator();
+//    }
 }

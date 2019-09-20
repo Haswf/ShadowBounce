@@ -65,7 +65,7 @@ public class Velocity {
     /*
      Set the speed of movement with a given double.
      */
-    public void setSpeed(Double newSpeed) {
+    public void setSpeed(double newSpeed) {
         this.speed = newSpeed;
     }
 

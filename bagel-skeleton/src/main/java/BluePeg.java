@@ -8,7 +8,7 @@ public class BluePeg extends Peg{
         this.setShape(shape);
     }
 
-    public static BluePeg convertToBlue(Peg p){
+    public static BluePeg toBluePeg(Peg p){
         String path = imagePath(COLOUR.BLUE, p.getShape());
         return new BluePeg(p.getPosition().getCentre(), new Image(path), p.getShape());
     }

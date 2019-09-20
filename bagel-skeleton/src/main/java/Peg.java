@@ -58,7 +58,6 @@ abstract public class Peg extends GameObject{
         return this.shape;
     }
 
-
     public static String imagePath(Peg.COLOUR colour, Peg.SHAPE shape){
         if (shape == SHAPE.NORMAL){
             return "res/" + colour.toString().toLowerCase() + "-peg.png";
@@ -68,19 +67,19 @@ abstract public class Peg extends GameObject{
         }
     }
 
-    public static Peg.COLOUR parseColor(String[] data){
+    public static Peg.COLOUR parseColor(String str){
         for (Peg.COLOUR colour : Peg.COLOUR.values()){
-            if (data[0].contains(colour.toString().toLowerCase())){
+            if (str.contains(colour.toString().toLowerCase())){
                 return colour;
             }
         }
         return Peg.COLOUR.BLUE;
     }
 
-    public static Peg.SHAPE parseShape(String[] data){
+    public static Peg.SHAPE parseShape(String str){
         String c;
         for (Peg.SHAPE shape : Peg.SHAPE.values()){
-            if (data[0].contains(shape.toString().toLowerCase())){
+            if (str.contains(shape.toString().toLowerCase())){
                 return shape;
             }
         }

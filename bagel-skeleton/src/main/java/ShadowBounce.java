@@ -6,7 +6,6 @@ import bagel.util.Vector2;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.logging.*;
 
 /**
  * An simple ball game.
@@ -95,15 +94,15 @@ public class ShadowBounce extends AbstractGame {
                 Peg peg = (Peg)obj;
                 for (Ball ball : balls) {
                     if (ball instanceof FireBall && peg.getPosition().distance(ball) < FireBall.DESTROY_RANGE){
-                        toBeDestroyed.add(peg);
-                        currBoard.destroy(peg);
+                        if (peg.getColour()!=Peg.COLOUR.GREY){
+                            toBeDestroyed.add(peg);
+                        }
                     }
                     else if (ball.getCollider().collideWith(peg)) {
                         Side col = peg.getCollider().collideAtSide(ball, ball.getVelocity());
                         ball.bounce(col);
                         if (peg.getColour() != Peg.COLOUR.GREY) {
                             toBeDestroyed.add(peg);
-                            currBoard.destroy(peg);
                         }
                     }
                 }
@@ -122,7 +121,6 @@ public class ShadowBounce extends AbstractGame {
 
             else if (obj instanceof Bucket){
                 bucket.move();
-                Bucket bucket = (Bucket)obj;
             }
 
             else if (obj instanceof Powerup){
@@ -134,7 +132,6 @@ public class ShadowBounce extends AbstractGame {
                         toBeDestroyed.add(up);
                         fb = up.activate(ball);
                         toBeDestroyed.add(ball);
-
                         renderer.add(fb);
                         LOGGER.log(Level.INFO, "Powerup hit\n");
                     }
@@ -145,35 +142,35 @@ public class ShadowBounce extends AbstractGame {
             }
         }
 
-        for (GameObject p : toBeDestroyed){
-            if (p instanceof BluePeg){
-                currBoard.destroy(p);
+        for (GameObject go : toBeDestroyed){
+            if (go instanceof Peg){
+                Peg p = (Peg)go;
+                currBoard.remove(p);
+                if (p instanceof RedPeg){
+                    LOGGER.log(Level.INFO, String.format("Red ball destroyed. %d left\n", currBoard.getRedCount()));
+                }
+                else if (p instanceof GreenPeg){
+                    GreenPeg gr = (GreenPeg)p;
+                    balls.addAll(gr.duplicate(balls.get(0)));
+                    LOGGER.log(Level.INFO, "Bonus balls released\n");
+                    renderer.addAll((List)balls);
+                }
             }
-            if (p instanceof RedPeg){
-                currBoard.destroy(p);
-                LOGGER.log(Level.INFO, String.format("Red ball destroyed. %d left\n", currBoard.getRedCount()));
-            }
-            if (p instanceof GreenPeg){
-                currBoard.destroy(p);
-                balls.addAll(((GreenPeg) p).duplicate(balls.get(0)));
-                LOGGER.log(Level.INFO, "Bonus balls released\n");
-                renderer.addAll((List)balls);
-            }
-            if (p instanceof Ball){
+            else if (go instanceof Ball){
                 if (balls.size() == 1){
                     turnEnd = true;
                 }
-                balls.remove(p);
+                balls.remove(go);
             }
         }
 
         renderer.removeAll(toBeDestroyed);
         toBeDestroyed.clear();
 
-//        if (ballLeft==0){
-//            Image gg = new Image("res/gameover.png");
-//            gg.draw(Window.getWidth()/2, Window.getWidth()/2);
-//        }
+        if (ballLeft==0){
+            Image gg = new Image("res/gameover.png");
+            gg.draw(Window.getWidth()/2, Window.getWidth()/2);
+        }
 
         if (turnEnd){
             ballLeft--;

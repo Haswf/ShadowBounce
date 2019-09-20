@@ -72,13 +72,13 @@ abstract public class GameObject implements Renderable{
     }
 
     /* Set the Bounding Box of the gameObject with a given Rectangle*/
-    public void setBoundingBox(Collider collider) {
+    public void setCollider(Collider collider) {
         this.collider = collider;
     }
 
     /* Move Bounding box to right position after position has been changed */
     private void updateCollider() {
-        this.collider.update(this.position);
+        this.collider.moveTo(this.position);
     }
 
     /* Render the GameObject if its visibility is True */

@@ -17,7 +17,6 @@ public class Bucket extends GameObject implements Movable {
         return new Velocity(this.velocity);
     }
 
-    @Override
     /* Set Velocity of the ball with given Velocity. */
     public void setVelocity(Velocity newVelocity){
         this.velocity = newVelocity;

@@ -11,7 +11,7 @@ public class GreenPeg extends Peg {
         super.setShape(shape);
     }
 
-    public static GreenPeg convertToGreen(Peg p){
+    public static GreenPeg toGreenPeg(Peg p){
         String path = imagePath(COLOUR.GREEN, p.getShape());
         return new GreenPeg(p.getPosition().getCentre(), new Image(path), p.getShape());
     }

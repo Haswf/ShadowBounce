@@ -24,30 +24,27 @@ public class Renderer{
         renderQueue.clear();
     }
 
-    public void enable(){
-        this.enabled = true;
-    }
-    public void disable(){
-        this.enabled = false;
+    public void setEnabled(boolean status){
+        this.enabled = status;
     }
 
-    public void add(GameObject o){
-        if (!renderQueue.contains(o)){
-            this.renderQueue.add(o);
-        }
+    public boolean getEnabled(){
+        return this.enabled;
     }
 
-    public void addAll(List<GameObject> gameObjectList){
-        gameObjectList.forEach(this::add);
-    }
-    public void remove(GameObject o) {
-        if (renderQueue.contains(o)) {
-            this.renderQueue.remove(o);
-        }
+    public boolean add(GameObject o){
+        return this.renderQueue.add(o);
     }
 
-    public void removeAll(List<GameObject> gameObjectList){
-        gameObjectList.forEach(this::remove);
+    public boolean addAll(List<GameObject> gameObjectList){
+        return this.renderQueue.addAll(gameObjectList);
+    }
+    public boolean remove(GameObject o) {
+        return this.renderQueue.remove(o);
+    }
+
+    public boolean removeAll(List<GameObject> gameObjectList){
+        return this.renderQueue.removeAll(gameObjectList);
     }
 
     public int size(){

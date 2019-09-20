@@ -8,7 +8,7 @@ public class RedPeg extends Peg {
         super.setShape(shape);
     }
 
-    public static RedPeg convertToRed(Peg p){
+    public static RedPeg toRedPeg(Peg p){
         String path = imagePath(COLOUR.RED, p.getShape());
         return new RedPeg(p.getPosition().getCentre(), new Image(path), p.getShape());
     }

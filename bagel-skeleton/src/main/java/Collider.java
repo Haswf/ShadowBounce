@@ -19,15 +19,19 @@ public class Collider {
         return new Rectangle(this.boundingBox);
     }
 
-    public void update(Position position){
+    public void setBoundingBox(Rectangle box){
+        this.boundingBox = box;
+    }
+
+    public void moveTo(Position position){
         this.boundingBox.moveTo(position.getTopLeft());
     }
 
-    boolean collideWith(GameObject other){
+    public boolean collideWith(GameObject other){
         return boundingBox.intersects(other.getCollider().getBoundingBox());
     }
 
-    Side collideAtSide(GameObject other, Velocity velocity){
+    public Side collideAtSide(GameObject other, Velocity velocity){
         Rectangle otherBoundingBox = other.getCollider().getBoundingBox();
         Point[] corners = {otherBoundingBox.topLeft(), otherBoundingBox.topRight(),
                     otherBoundingBox.bottomLeft(), otherBoundingBox.bottomRight()};
