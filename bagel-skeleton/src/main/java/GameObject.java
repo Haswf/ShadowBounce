@@ -1,6 +1,7 @@
 import bagel.*;
 import bagel.util.Point;
 import bagel.util.Rectangle;
+import bagel.util.Side;
 
 /**
  * An abstract GameObject class representing
@@ -10,37 +11,26 @@ import bagel.util.Rectangle;
  * @author Shuyang Fan
  */
 
-abstract public class GameObject {
-
+abstract public class GameObject implements Renderable{
     private Position position; // position of object on the screen
     private Image image; // image of the object
-    private boolean visibility;
-    private Rectangle boundingBox; // bounding box for collision detection
+    private Collider collider; // bounding box for collision detection
 
     public GameObject(){
         this.position = new Position();
     }
 
     // constructor for GameObject where both position and image are provided.
-    public GameObject(Point centre, Image image) {
+    public GameObject(Point centre) {
         this.position = new Position(centre, image.getWidth(),image.getHeight());
-        this.image = image;
-        this.visibility = false; // by default, the object is set to invisible
-
-        // Move the bounding box to the correct position.
-        this.boundingBox = this.image.getBoundingBox();
-        this.boundingBox.moveTo(position.getTopLeft());
     }
 
     // constructor for GameObject where position, image and visibility are provided.
-    public GameObject(Point centre, Image image, boolean visible) {
+    public GameObject(Point centre, Image image) {
         this.position = new Position(centre, image.getWidth(),image.getHeight());
         this.image = image;
-        this.visibility = visible;
-
         // Move the bounding box to the correct position.
-        this.boundingBox = this.image.getBoundingBox();
-        this.boundingBox.moveTo(position.getTopLeft());
+        this.collider = new Collider(position, image);
     }
 
     // copy constructor
@@ -48,9 +38,8 @@ abstract public class GameObject {
         this.position = new Position(other.position.getCentre(), other.position.getTopLeft());
         if (other.getImage() != null) {
             this.image = other.image;
-            this.boundingBox = new Rectangle(other.getPosition().getTopLeft(), other.image.getWidth(), other.image.getHeight());
+            this.collider = new Collider(position, image);
         }
-        this.visibility = other.visibility;
     }
 
     /* Return the position of the GameObject as a Point.
@@ -62,7 +51,7 @@ abstract public class GameObject {
     /* Moves the GameObject so that its centre is at the specified point. */
     public void setPosition(Position position) {
         this.position = position;
-        updateBoundingBox();
+        updateCollider();
     }
 
     /* Return the image of the GameObject */
@@ -77,43 +66,25 @@ abstract public class GameObject {
         this.image = newImage;
     }
 
-    /* Return an boolean representing visibility of the GameObject. */
-    public boolean getVisibility() {
-        return this.visibility;
-    }
-
-    /* Set visibility of the GameObject. The GameObject will be rendered if visibility is True. */
-    public void setVisibility(boolean visibility) {
-        this.visibility = visibility;
-    }
-
     /* Return the Bounding Box of the gameObject as a Rectangle*/
-    public Rectangle getBoundingBox() {
-        return new Rectangle(boundingBox);
+    public Collider getCollider() {
+        return new Collider(this.collider);
     }
 
     /* Set the Bounding Box of the gameObject with a given Rectangle*/
-    public void setBoundingBox(Rectangle bx) {
-        this.boundingBox = bx;
+    public void setCollider(Collider collider) {
+        this.collider = collider;
     }
 
     /* Move Bounding box to right position after position has been changed */
-    private void updateBoundingBox() {
-        this.boundingBox.moveTo(position.getTopLeft());
-    }
-
-    /* Return distance from this GameObject to another. */
-    public double distance(GameObject other){
-        return other.getPosition().getCentre().asVector().sub(this.getPosition().getCentre().asVector()).length();
+    private void updateCollider() {
+        this.collider.moveTo(this.position);
     }
 
     /* Render the GameObject if its visibility is True */
+    @ Override
     public void render() {
-        if (this.image == null){
-            return;
-        }
-
-        if (this.getVisibility()) {
+        if (this.image!=null){
             this.image.draw(this.getPosition().getCentre().x, this.getPosition().getCentre().y);
         }
     }

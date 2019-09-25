@@ -1,0 +1,47 @@
+import bagel.*;
+import bagel.util.Point;
+import bagel.util.Rectangle;
+import bagel.util.Side;
+
+public class Collider {
+    private Rectangle boundingBox;
+
+    public Collider(Position position, Image image){
+        this.boundingBox = new Rectangle(position.getTopLeft(), image.getWidth(), image.getHeight());
+    }
+
+    // Copy constructor
+    public Collider(Collider other){
+        this.boundingBox = new Rectangle(other.boundingBox);
+    }
+
+    public Rectangle getBoundingBox(){
+        return new Rectangle(this.boundingBox);
+    }
+
+    public void setBoundingBox(Rectangle box){
+        this.boundingBox = box;
+    }
+
+    public void moveTo(Position position){
+        this.boundingBox.moveTo(position.getTopLeft());
+    }
+
+    public boolean collideWith(GameObject other){
+        return boundingBox.intersects(other.getCollider().getBoundingBox());
+    }
+
+    public Side collideAtSide(GameObject other, Velocity velocity){
+        Rectangle otherBoundingBox = other.getCollider().getBoundingBox();
+        Point[] corners = {otherBoundingBox.topLeft(), otherBoundingBox.topRight(),
+                    otherBoundingBox.bottomLeft(), otherBoundingBox.bottomRight()};
+
+        Side colSide;
+        for (Point p : corners){
+            if ((colSide = this.getBoundingBox().intersectedAt(p, velocity.asVector()))!=Side.NONE){
+                return colSide;
+            }
+        }
+        return Side.NONE;
+    }
+}
