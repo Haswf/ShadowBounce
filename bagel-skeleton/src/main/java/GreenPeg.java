@@ -6,24 +6,22 @@ import java.util.*;
 
 public class GreenPeg extends Peg {
     public GreenPeg(Point centre, Image image, Peg.SHAPE shape){
-        super(centre, image, shape);
-        super.setColour(COLOUR.GREEN);
-        super.setShape(shape);
+        super(centre, image, shape, COLOUR.GREEN);
     }
 
     public static GreenPeg toGreenPeg(Peg p){
         String path = imagePath(COLOUR.GREEN, p.getShape());
-        return new GreenPeg(p.getPosition().getCentre(), new Image(path), p.getShape());
+        return new GreenPeg(p.center(), new Image(path), p.getShape());
     }
 
     public ArrayList<Ball> duplicate(Ball incoming){
         ArrayList<Ball> dups = new ArrayList<>();
         double speed = 10.0/60;
 
-        dups.add(new Ball(this.getPosition().getCentre(), incoming.getImage(),
-                new Velocity(Vector2.up.add(Vector2.left), speed)));
-        dups.add(new Ball(this.getPosition().getCentre(), incoming.getImage(),
-                new Velocity(Vector2.up.add(Vector2.right), speed)));
+        dups.add(new Ball(center(), incoming.getImage(),
+                Vector2.up.add(Vector2.left).mul(speed)));
+        dups.add(new Ball(center(), incoming.getImage(),
+                Vector2.up.add(Vector2.right).mul(speed)));
         return dups;
     }
 

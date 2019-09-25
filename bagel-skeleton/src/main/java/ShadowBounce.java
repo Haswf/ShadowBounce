@@ -19,7 +19,7 @@ public class ShadowBounce extends AbstractGame {
     private ArrayList<Ball> balls;
 
     private ArrayList<Powerup> powerups;
-    private Renderer renderer;
+    private ArrayList<GameObject> renderer;
 
     private Bucket bucket;
 
@@ -32,7 +32,7 @@ public class ShadowBounce extends AbstractGame {
     public ShadowBounce() {
         random = new Random();
 
-        renderer = new Renderer();
+        renderer = new ArrayList<>();
 
         boards = new ArrayList<>();
         boards.add(new Board("board/0.csv"));
@@ -57,13 +57,11 @@ public class ShadowBounce extends AbstractGame {
         game.run();
     }
 
-    public void resetBall(Input input){
-        Ball ball = new Ball(Ball.INIT_POSITION, new Image("res/ball.png"), new Velocity());
-        ball.setPosition(ball.getPosition().setCentre(Ball.INIT_POSITION));;
+    private void resetBall(Input input){
         Point mousePosition = input.getMousePosition();
         // Calculate normal vector from init point to mouse position.
         Vector2 mouseDirection = mousePosition.asVector().sub(Ball.INIT_POSITION.asVector()).normalised();
-        ball.setVelocity(new Velocity(mouseDirection, Ball.INIT_SPEED));
+        Ball ball = new Ball(Ball.INIT_POSITION, new Image("res/ball.png"), mouseDirection.mul(Ball.INIT_SPEED));
         balls.add(ball);
     }
 
@@ -79,7 +77,7 @@ public class ShadowBounce extends AbstractGame {
 
         if (input.isDown(MouseButtons.LEFT) && balls.size()==0 && ballLeft>0) {
             resetBall(input);
-            renderer.addAll((List)balls);
+            renderer.addAll(balls);
         }
 
         // Quit game if ESCAPE key was pressed
@@ -87,19 +85,19 @@ public class ShadowBounce extends AbstractGame {
             Window.close();
         }
 
-        Iterator<GameObject> queueIter = renderer.getQueue().iterator();
+        Iterator<GameObject> queueIter = renderer.iterator();
         while (queueIter.hasNext()) {
             GameObject obj = queueIter.next();
             if (obj instanceof Peg) {
                 Peg peg = (Peg)obj;
                 for (Ball ball : balls) {
-                    if (ball instanceof FireBall && peg.getPosition().distance(ball) < FireBall.DESTROY_RANGE){
+                    if (ball instanceof FireBall && peg.distance(ball) < FireBall.DESTROY_RANGE){
                         if (peg.getColour()!=Peg.COLOUR.GREY){
                             toBeDestroyed.add(peg);
                         }
                     }
-                    else if (ball.getCollider().collideWith(peg)) {
-                        Side col = peg.getCollider().collideAtSide(ball, ball.getVelocity());
+                    else if (ball.collideWith(peg)) {
+                        Side col = peg.collideAtSide(ball);
                         ball.bounce(col);
                         if (peg.getColour() != Peg.COLOUR.GREY) {
                             toBeDestroyed.add(peg);
@@ -110,8 +108,8 @@ public class ShadowBounce extends AbstractGame {
             else if (obj instanceof Ball) {
                 Ball ball = (Ball) obj;
                 ball.move();
-                if (ball.getPosition().getCentre().y > Window.getHeight()) {
-                    if (ball.getCollider().collideWith(bucket)){
+                if (ball.outOfScreen()){
+                    if (ball.collideWith(bucket)){
                         ballLeft++;
                         LOGGER.log(Level.INFO, "ballLeft + 1");
                     }
@@ -128,7 +126,7 @@ public class ShadowBounce extends AbstractGame {
                 up.move();
                 FireBall fb = null;
                 for (Ball ball : balls) {
-                    if (ball.getCollider().collideWith(up)) {
+                    if (ball.collideWith(up)) {
                         toBeDestroyed.add(up);
                         fb = up.activate(ball);
                         toBeDestroyed.add(ball);
@@ -153,7 +151,7 @@ public class ShadowBounce extends AbstractGame {
                     GreenPeg gr = (GreenPeg)p;
                     balls.addAll(gr.duplicate(balls.get(0)));
                     LOGGER.log(Level.INFO, "Bonus balls released\n");
-                    renderer.addAll((List)balls);
+                    renderer.addAll(balls);
                 }
             }
             else if (go instanceof Ball){
@@ -184,13 +182,16 @@ public class ShadowBounce extends AbstractGame {
         if (currBoard.getRedCount() == 0){
             loadNextBoard();
         }
-        renderer.render();
+
+        for (GameObject g:renderer){
+            g.render();
+        }
 
     }
 
-    public void loadNextBoard() {
+    private void loadNextBoard() {
         if (boardIter.hasNext()) {
-            renderer.removeAll((List)balls);
+            renderer.removeAll(balls);
             balls.clear();
             renderer.removeAll(currBoard.asList());
             currBoard = boardIter.next();
@@ -199,7 +200,7 @@ public class ShadowBounce extends AbstractGame {
         }
     }
 
-    public void generatePowerup(){
+    private void generatePowerup(){
         if (random.nextDouble() < Powerup.CHANCE){
             Powerup up = new Powerup();
             powerups.add(up);

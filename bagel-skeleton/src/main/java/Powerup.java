@@ -9,24 +9,20 @@ public class Powerup extends GameObject implements Movable {
     public static final double CHANCE = 0.1;
     public static final int MIN_DISTANCE = 5;
     public static final int SPEED = 3;
-    private Velocity velocity;
-    private Position destination;
+    private Vector2 velocity;
+    private Point destination;
 
     public Powerup(){
         super(nextPoint(), new Image("res/powerup.png"));
-        destination = new Position(nextPoint());
-        this.velocity = new Velocity(destination.getCentre().asVector().sub(getPosition().getCentre().asVector()).normalised(), SPEED);
+        destination =nextPoint();
+        this.velocity = destination.asVector().sub(center().asVector()).normalised().mul(SPEED);
     }
 
-    /* Return a Velocity object representing current movement of the object. */
-    public Velocity getVelocity(){
-        return new Velocity(this.velocity);
+    /* Return a  object representing current movement of the object. */
+    public Vector2 velocity(){
+        return new Vector2(velocity.x, velocity.y);
     }
 
-    /* Set Velocity of the ball with given Velocity. */
-    public void setVelocity(Velocity newVelocity){
-        this.velocity = newVelocity;
-    }
 
     private static Point nextPoint(){
         Random random = new Random();
@@ -34,12 +30,11 @@ public class Powerup extends GameObject implements Movable {
     }
 
     public void move(){
-        Point newCentre = (this.getPosition().getCentre().asVector()).add(this.velocity.asVector()).asPoint();
-        this.setPosition(getPosition().setCentre(newCentre));
+        moveTo(this.center().asVector().add(velocity).asPoint());
 
-        if (this.destination.distance(this.getPosition()) < MIN_DISTANCE){
-            destination = new Position(nextPoint());
-            this.velocity = new Velocity(destination.getCentre().asVector().sub(getPosition().getCentre().asVector()).normalised(), SPEED);
+        if (this.distance(this.destination) < MIN_DISTANCE){
+            destination = nextPoint();
+            this.velocity = destination.asVector().sub(center().asVector()).normalised().mul(SPEED);
         }
     }
 
