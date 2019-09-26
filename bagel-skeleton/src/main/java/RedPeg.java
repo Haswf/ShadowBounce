@@ -4,8 +4,8 @@ import bagel.util.Point;
 import java.util.logging.Level;
 
 public class RedPeg extends Peg implements OnCollisionRemove {
-    public RedPeg(Point centre, Image image, SHAPE shape){
-        super(centre, image, shape, COLOUR.RED);
+    public RedPeg(Point centre, Image image, Shape shape){
+        super(centre, image, shape, Colour.RED);
     }
 
     @ Override

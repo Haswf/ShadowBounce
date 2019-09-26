@@ -42,7 +42,7 @@ abstract public class GameObject implements Renderable{
         return boundingBox.topLeft();
     }
 
-    public Point computeTopLeft(Point center){
+    private Point computeTopLeft(Point center){
         return new Point(center.x - image.getWidth()/2, center.y - image.getHeight()/2);
     }
 

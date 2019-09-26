@@ -1,6 +1,8 @@
 import bagel.*;
 import bagel.util.Point;
 
+import java.util.AbstractMap;
+
 /**
  * A class representing peg in ShadowBounce.
  * Peg is a child class of GameObject.
@@ -11,23 +13,23 @@ import bagel.util.Point;
 
 abstract public class Peg extends GameObject{
 
-    public enum COLOUR {
+    public enum Colour {
         BLUE,
         RED,
         GREY,
         GREEN,
     };
 
-   public enum SHAPE{
+   public enum Shape{
         NORMAL,
         HORIZONTAL,
         VERTICAL,
     }
 
-    private SHAPE shape;
-    private COLOUR colour;
+    private Shape shape;
+    private Colour colour;
 
-    public Peg(Point centre, Image image, SHAPE shape, COLOUR colour){
+    public Peg(Point centre, Image image, Shape shape, Colour colour){
         super(centre, image);
         this.shape = shape;
         this.colour = colour;
@@ -39,39 +41,39 @@ abstract public class Peg extends GameObject{
                 this.center().x, this.center().y);
     }
 
-    public COLOUR getColour() {
+    public Colour getColour() {
         return colour;
     }
 
-    public SHAPE getShape(){
+    public Shape getShape(){
         return this.shape;
     }
 
-    public static String imagePath(Peg.COLOUR colour, Peg.SHAPE shape){
-        if (shape == SHAPE.NORMAL){
-            return "res/" + colour.toString().toLowerCase() + "-peg.png";
+    public static String imagePath(Peg.Colour Colour, Peg.Shape shape){
+        if (shape == Shape.NORMAL){
+            return "res/" + Colour.toString().toLowerCase() + "-peg.png";
         }
         else{
-            return "res/" + colour.toString().toLowerCase() + "-" + shape.toString().toLowerCase() + "-peg.png";
+            return "res/" + Colour.toString().toLowerCase() + "-" + shape.toString().toLowerCase() + "-peg.png";
         }
     }
 
-    public static Peg.COLOUR parseColor(String str){
-        for (Peg.COLOUR colour : Peg.COLOUR.values()){
-            if (str.contains(colour.toString().toLowerCase())){
-                return colour;
+    public static Peg.Colour parseColor(String str){
+        for (Peg.Colour Colour : Peg.Colour.values()){
+            if (str.contains(Colour.toString().toLowerCase())){
+                return Colour;
             }
         }
-        return Peg.COLOUR.BLUE;
+        return Peg.Colour.BLUE;
     }
 
-    public static Peg.SHAPE parseShape(String str){
+    public static Peg.Shape parseShape(String str){
         String c;
-        for (Peg.SHAPE shape : Peg.SHAPE.values()){
+        for (Peg.Shape shape : Peg.Shape.values()){
             if (str.contains(shape.toString().toLowerCase())){
                 return shape;
             }
         }
-        return Peg.SHAPE.NORMAL;
+        return Peg.Shape.NORMAL;
     }
 }

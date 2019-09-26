@@ -2,8 +2,8 @@ import bagel.Image;
 import bagel.util.Point;
 
 public class BluePeg extends Peg implements OnCollisionRemove{
-    public BluePeg(Point centre, Image image, Peg.SHAPE shape){
-        super(centre, image, shape, COLOUR.BLUE);
+    public BluePeg(Point centre, Image image, Peg.Shape shape){
+        super(centre, image, shape, Colour.BLUE);
     }
 
     @ Override
@@ -12,12 +12,12 @@ public class BluePeg extends Peg implements OnCollisionRemove{
     }
 
     public RedPeg toRed(){
-        String path = imagePath(COLOUR.RED, this.getShape());
+        String path = imagePath(Colour.RED, this.getShape());
         return new RedPeg(this.center(), new Image(path), this.getShape());
     }
 
     public GreenPeg toGreen(){
-        String path = imagePath(COLOUR.GREEN, getShape());
+        String path = imagePath(Colour.GREEN, getShape());
         return new GreenPeg(center(), new Image(path), getShape());
     }
 

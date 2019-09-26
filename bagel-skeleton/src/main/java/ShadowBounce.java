@@ -38,8 +38,8 @@ public class ShadowBounce extends AbstractGame {
         onScreen = new ArrayList<>();
 
         boards = new ArrayList<>();
-        boards.add(new Board("board/0.csv"));
-        boards.add(new Board("board/0.csv"));
+        boards.add(new Board("res/0.csv"));
+        boards.add(new Board("res/0.csv"));
         boardIter = boards.iterator();
         currBoard = boardIter.next();
 

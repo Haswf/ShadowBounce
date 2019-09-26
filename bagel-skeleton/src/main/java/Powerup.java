@@ -45,16 +45,6 @@ public class Powerup extends GameObject implements Movable, OnCollisionCreate, O
     }
 
     @ Override
-    public <T extends GameObject & Movable> Collection<GameObject> onCollisionCreate(T col){
-        ArrayList<GameObject> lst = new ArrayList<>();
-        ShadowBounce.LOGGER.log(Level.INFO, "Powerup hit\n");
-        if (col instanceof Ball){
-            lst.add(this.activate((Ball)col));
-        }
-        return lst;
-    }
-
-    @ Override
     public void move(){
         moveTo(this.center().asVector().add(velocity).asPoint());
 
@@ -69,7 +59,17 @@ public class Powerup extends GameObject implements Movable, OnCollisionCreate, O
         return this;
     }
 
-    public FireBall activate(Ball incoming){
+    @ Override
+    public <T extends GameObject & Movable> Collection<GameObject> onCollisionCreate(T col){
+        ArrayList<GameObject> lst = new ArrayList<>();
+        ShadowBounce.LOGGER.log(Level.INFO, "Powerup hit\n");
+        if (col instanceof Ball){
+            lst.add(this.activate((Ball)col));
+        }
+        return lst;
+    }
+
+    private FireBall activate(Ball incoming){
         return new FireBall(incoming);
     }
 

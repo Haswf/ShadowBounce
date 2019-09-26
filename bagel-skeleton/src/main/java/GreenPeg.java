@@ -6,8 +6,8 @@ import java.util.*;
 import java.util.logging.Level;
 
 public class GreenPeg extends Peg implements OnCollisionCreate, OnCollisionRemove {
-    public GreenPeg(Point centre, Image image, Peg.SHAPE shape){
-        super(centre, image, shape, COLOUR.GREEN);
+    public GreenPeg(Point centre, Image image, Peg.Shape shape){
+        super(centre, image, shape, Colour.GREEN);
     }
 
     public ArrayList<Ball> duplicate(Ball incoming){
@@ -22,7 +22,7 @@ public class GreenPeg extends Peg implements OnCollisionCreate, OnCollisionRemov
     }
 
     public BluePeg toBlue(){
-        String path = imagePath(COLOUR.BLUE, getShape());
+        String path = imagePath(Colour.BLUE, getShape());
         return new BluePeg(center(), new Image(path), getShape());
     }
 
