@@ -3,8 +3,6 @@ import bagel.util.Point;
 
 public class GreyPeg extends Peg{
     public GreyPeg(Point centre, Image image, SHAPE shape){
-        super(centre, image);
-        this.setShape(shape);
-        this.setColour(COLOUR.GREY);
+        super(centre, image, shape, COLOUR.GREY);
     }
 }

@@ -3,31 +3,44 @@ import bagel.Window;
 import bagel.util.Point;
 import bagel.util.Vector2;
 
+import java.util.logging.Level;
+
 public class Bucket extends GameObject implements Movable {
     public static Point INIT_POSITION = new Point(512, 744);
     public static double SPEED = 4;
-    private Velocity velocity;
+    private Vector2 velocity;
     public Bucket(){
         super(INIT_POSITION, new Image("res/bucket.png"));
-        this.velocity = new Velocity(Vector2.left, SPEED);
+        this.velocity = Vector2.left.mul(SPEED);
     }
 
-    /* Return a Velocity object representing current movement of the object. */
-    public Velocity getVelocity(){
-        return new Velocity(this.velocity);
+    /* Return a Vector2 object representing current movement of the object. */
+    public Vector2 velocity(){
+        return new Vector2(velocity.x, velocity.y);
     }
 
-    /* Set Velocity of the ball with given Velocity. */
-    public void setVelocity(Velocity newVelocity){
-        this.velocity = newVelocity;
+    private void reverseHorizontal() {
+        this.velocity = new Vector2(-this.velocity.x, this.velocity.y);
     }
+
+    /*
+     Reverse vertical velocity
+     */
+    private void reverseVertical() {
+        this.velocity = new Vector2(this.velocity.x, -this.velocity.y);
+    }
+
+    public boolean dropIntoBucket(Ball ball) {
+        return (ball.outOfScreen() && ball.collideWith(this));
+    }
+
 
     @Override
     public void move(){
-        Point newCentre = (this.getPosition().getCentre().asVector()).add(this.velocity.asVector()).asPoint();
-        this.setPosition(getPosition().setCentre(newCentre));
-        if (this.getPosition().getCentre().x < getImage().getWidth()/2 || this.getPosition().getCentre().x > Window.getWidth()-getImage().getWidth()/2) {
-            this.setVelocity(this.getVelocity().reverseHorizontal());
+        Point newCentre = (center().asVector()).add(this.velocity).asPoint();
+        this.moveTo(newCentre);
+        if (center().x < getImage().getWidth()/2 || this.center().x > Window.getWidth()-getImage().getWidth()/2) {
+            reverseHorizontal();
         }
     }
 }

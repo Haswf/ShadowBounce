@@ -3,29 +3,23 @@ import bagel.Window;
 import bagel.util.Point;
 import bagel.util.Vector2;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
 
-public class Powerup extends GameObject implements Movable {
+public class Powerup extends GameObject implements Movable, OnCollisionCreate, OnCollisionRemove {
     public static final double CHANCE = 0.1;
     public static final int MIN_DISTANCE = 5;
     public static final int SPEED = 3;
-    private Velocity velocity;
-    private Position destination;
+    private Vector2 velocity;
+    private Point destination;
 
     public Powerup(){
         super(nextPoint(), new Image("res/powerup.png"));
-        destination = new Position(nextPoint());
-        this.velocity = new Velocity(destination.getCentre().asVector().sub(getPosition().getCentre().asVector()).normalised(), SPEED);
-    }
-
-    /* Return a Velocity object representing current movement of the object. */
-    public Velocity getVelocity(){
-        return new Velocity(this.velocity);
-    }
-
-    /* Set Velocity of the ball with given Velocity. */
-    public void setVelocity(Velocity newVelocity){
-        this.velocity = newVelocity;
+        destination =nextPoint();
+        this.velocity = destination.asVector().sub(center().asVector()).normalised().mul(SPEED);
     }
 
     private static Point nextPoint(){
@@ -33,17 +27,50 @@ public class Powerup extends GameObject implements Movable {
         return new Point(random.nextInt(Window.getWidth()), random.nextInt(Window.getHeight()));
     }
 
-    public void move(){
-        Point newCentre = (this.getPosition().getCentre().asVector()).add(this.velocity.asVector()).asPoint();
-        this.setPosition(getPosition().setCentre(newCentre));
-
-        if (this.destination.distance(this.getPosition()) < MIN_DISTANCE){
-            destination = new Position(nextPoint());
-            this.velocity = new Velocity(destination.getCentre().asVector().sub(getPosition().getCentre().asVector()).normalised(), SPEED);
+    public static ArrayList<GameObject> createPowerup(){
+        Random random = new Random();
+        ArrayList<GameObject> lst = new ArrayList<>();
+        if (random.nextDouble() < Powerup.CHANCE){
+            Powerup pw = new Powerup();
+            lst.add(pw);
         }
+        return lst;
+    }
+
+
+    @ Override
+    /* Return a  object representing current movement of the object. */
+    public Vector2 velocity(){
+        return new Vector2(velocity.x, velocity.y);
+    }
+
+    @ Override
+    public <T extends GameObject & Movable> Collection<GameObject> onCollisionCreate(T col){
+        ArrayList<GameObject> lst = new ArrayList<>();
+        ShadowBounce.LOGGER.log(Level.INFO, "Powerup hit\n");
+        if (col instanceof Ball){
+            lst.add(this.activate((Ball)col));
+        }
+        return lst;
+    }
+
+    @ Override
+    public void move(){
+        moveTo(this.center().asVector().add(velocity).asPoint());
+
+        if (this.distance(this.destination) < MIN_DISTANCE){
+            destination = nextPoint();
+            this.velocity = destination.asVector().sub(center().asVector()).normalised().mul(SPEED);
+        }
+    }
+
+    @ Override
+    public GameObject onCollisionRemove(){
+        return this;
     }
 
     public FireBall activate(Ball incoming){
         return new FireBall(incoming);
     }
+
 }

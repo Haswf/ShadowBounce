@@ -11,14 +11,14 @@ import bagel.util.Point;
 
 abstract public class Peg extends GameObject{
 
-    public static enum COLOUR {
+    public enum COLOUR {
         BLUE,
         RED,
         GREY,
         GREEN,
     };
 
-   public static enum SHAPE{
+   public enum SHAPE{
         NORMAL,
         HORIZONTAL,
         VERTICAL,
@@ -27,31 +27,20 @@ abstract public class Peg extends GameObject{
     private SHAPE shape;
     private COLOUR colour;
 
-    public Peg(Point centre, Image image){
+    public Peg(Point centre, Image image, SHAPE shape, COLOUR colour){
         super(centre, image);
-    }
-
-    public Peg(Point centre, Image image, SHAPE shape){
-        super(centre, image);
-        this.setShape(shape);
+        this.shape = shape;
+        this.colour = colour;
     }
 
     public String toString(){
         return String.format("%s %s Peg (%f, %f)", this.shape.toString().toLowerCase(),
                 this.colour.toString().toLowerCase(),
-                this.getPosition().getCentre().x, this.getPosition().getCentre().y);
+                this.center().x, this.center().y);
     }
 
     public COLOUR getColour() {
         return colour;
-    }
-
-    public void setColour(COLOUR colour) {
-        this.colour = colour;
-    }
-
-    public void setShape(SHAPE shape){
-        this.shape = shape;
     }
 
     public SHAPE getShape(){

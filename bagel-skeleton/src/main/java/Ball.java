@@ -3,59 +3,83 @@ import bagel.util.Point;
 import bagel.util.Side;
 import bagel.util.Vector2;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * A class representing Ball for ShadowBounce.
  *
  * @author Shuyang Fan
  */
-public class Ball extends GameObject implements Movable{
+public class Ball extends GameObject implements Movable, OnCollisionEnter{
     public static final Point INIT_POSITION = new Point(512, 32);
     public static final double INIT_SPEED = 10.0;
     // Acceleration due to gravity
     public static final double GRAVITY = 0.15;
-    private Velocity velocity;
+    private Vector2 velocity;
 
-
-    /* Constructor for Ball with a given velocity */
-    public Ball(Point centre, Image image, Velocity velocity){
-        super(centre, image);
+    public Ball(Point center, Image image, Vector2 velocity) {
+        super(center, image);
         this.velocity = velocity;
     }
 
-    /* Return a Velocity object representing current movement of the object. */
-    public Velocity getVelocity(){
-        return new Velocity(this.velocity);
+    public static Ball shoot(Input input){
+        Ball ball = new Ball(Ball.INIT_POSITION, new Image("res/ball.png"), Vector2.down.mul(0));
+        Vector2 mouseDirection = input.getMousePosition().asVector().sub(Ball.INIT_POSITION.asVector()).normalised();
+        ball.setVelocity(mouseDirection.mul(Ball.INIT_SPEED));
+        return ball;
     }
 
-    /* Set Velocity of the ball with given Velocity. */
-    public void setVelocity(Velocity newVelocity){
-        this.velocity = newVelocity;
+    private void setVelocity(Vector2 velocity){
+        this.velocity = velocity;
     }
 
     private void applyGravity(){
-        // increase vertical speed to simulate gravity if the Ball is visible.
-        this.setVelocity(this.getVelocity().add(Vector2.down.mul(GRAVITY)));
+        setVelocity(this.velocity.add(Vector2.down.mul(GRAVITY)));
     }
 
-    public void bounce(Side col){
+    private void bounce(Side col){
         if (col != Side.NONE) {
             if (col == Side.LEFT || col == Side.RIGHT) {
-                setVelocity(getVelocity().reverseHorizontal());
+                reverseHorizontal();
             } else {
-                setVelocity(getVelocity().reverseVertical());
+                reverseVertical();
             }
         }
     }
 
+    private void reverseHorizontal() {
+        this.velocity = new Vector2(-this.velocity.x, this.velocity.y);
+    }
+
+    /* Reverse vertical velocity */
+    private void reverseVertical() {
+        this.velocity = new Vector2(this.velocity.x, -this.velocity.y);
+    }
+
     @Override
     public void move(){
-        if (this.velocity != null) {
-            Point newCentre = (this.getPosition().getCentre().asVector()).add(this.velocity.asVector()).asPoint();
-            this.setPosition(getPosition().setCentre(newCentre));
-            applyGravity();
+        Point newCenter = (this.center().asVector()).add(this.velocity).asPoint();
+        this.moveTo(newCenter);
+        applyGravity();
+
+        if (this.center().x < 0 || this.center().x > Window.getWidth()) {
+            reverseHorizontal();
         }
-        if (this.getPosition().getCentre().x < 0 || this.getPosition().getCentre().x > Window.getWidth()) {
-            this.setVelocity(this.getVelocity().reverseHorizontal());
-        }
+    }
+
+    public boolean outOfScreen() {
+        return this.getBoundingBox().top() > Window.getHeight();
+    }
+
+    @ Override
+    /* Return a vector2 representing current movement of the object. */
+    public Vector2 velocity(){
+        return new Vector2(velocity.x, velocity.y);
+    }
+
+    @ Override
+    public <T extends GameObject> void onCollisionEnter(T col){
+        this.bounce(col.collideAtSide(this));
     }
 }

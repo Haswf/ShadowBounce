@@ -13,13 +13,12 @@ import java.util.logging.Logger;
  * @author Shuyang Fan
  */
 public class ShadowBounce extends AbstractGame {
-    private final static Logger LOGGER =
+    public final static Logger LOGGER =
             Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
-    private Random random;
     private ArrayList<Ball> balls;
 
     private ArrayList<Powerup> powerups;
-    private Renderer renderer;
+    private ArrayList<GameObject> onScreen;
 
     private Bucket bucket;
 
@@ -28,11 +27,15 @@ public class ShadowBounce extends AbstractGame {
     private Iterator<Board> boardIter;
     private int ballLeft = 20;
 
+    private ArrayList<GameObject> toBeDestroyed;
+    private ArrayList<GameObject> toBeAdded;
+
     /* ShadowBounce */
     public ShadowBounce() {
-        random = new Random();
+        toBeDestroyed = new ArrayList<>();
+        toBeAdded = new ArrayList<>();
 
-        renderer = new Renderer();
+        onScreen = new ArrayList<>();
 
         boards = new ArrayList<>();
         boards.add(new Board("board/0.csv"));
@@ -41,13 +44,13 @@ public class ShadowBounce extends AbstractGame {
         currBoard = boardIter.next();
 
         bucket = new Bucket();
-        renderer.add(bucket);
+        toBeAdded.add(bucket);
 
         powerups = new ArrayList<>();
-        generatePowerup();
+        toBeAdded.addAll(Powerup.createPowerup());
 
         balls = new ArrayList<>();
-        renderer.addAll(currBoard.asList());
+        toBeAdded.addAll(currBoard.asList());
     }
 
 
@@ -57,16 +60,6 @@ public class ShadowBounce extends AbstractGame {
         game.run();
     }
 
-    public void resetBall(Input input){
-        Ball ball = new Ball(Ball.INIT_POSITION, new Image("res/ball.png"), new Velocity());
-        ball.setPosition(ball.getPosition().setCentre(Ball.INIT_POSITION));;
-        Point mousePosition = input.getMousePosition();
-        // Calculate normal vector from init point to mouse position.
-        Vector2 mouseDirection = mousePosition.asVector().sub(Ball.INIT_POSITION.asVector()).normalised();
-        ball.setVelocity(new Velocity(mouseDirection, Ball.INIT_SPEED));
-        balls.add(ball);
-    }
-
     /**
      * Performs a state update. This simple example shows an image that can be controlled with the arrow keys, and
      * allows the game to exit when the escape key is pressed.
@@ -74,12 +67,9 @@ public class ShadowBounce extends AbstractGame {
 
     @Override
     public void update(Input input) {
-        boolean turnEnd = false;
-        ArrayList<GameObject> toBeDestroyed = new ArrayList<>();
 
         if (input.isDown(MouseButtons.LEFT) && balls.size()==0 && ballLeft>0) {
-            resetBall(input);
-            renderer.addAll((List)balls);
+            toBeAdded.add(Ball.shoot(input));
         }
 
         // Quit game if ESCAPE key was pressed
@@ -87,74 +77,97 @@ public class ShadowBounce extends AbstractGame {
             Window.close();
         }
 
-        Iterator<GameObject> queueIter = renderer.getQueue().iterator();
+        Iterator<GameObject> queueIter = onScreen.iterator();
         while (queueIter.hasNext()) {
             GameObject obj = queueIter.next();
+            if (obj instanceof Movable){
+                ((Movable)obj).move();
+            }
+
             if (obj instanceof Peg) {
                 Peg peg = (Peg)obj;
+
                 for (Ball ball : balls) {
-                    if (ball instanceof FireBall && peg.getPosition().distance(ball) < FireBall.DESTROY_RANGE){
-                        if (peg.getColour()!=Peg.COLOUR.GREY){
-                            toBeDestroyed.add(peg);
-                        }
+                    if (ball instanceof FireBall && ((FireBall)ball).withinRangeDestroy(peg)){
+                        OnCollisionRemove removal = (OnCollisionRemove)peg;
+                        toBeDestroyed.add(removal.onCollisionRemove());
                     }
-                    else if (ball.getCollider().collideWith(peg)) {
-                        Side col = peg.getCollider().collideAtSide(ball, ball.getVelocity());
-                        ball.bounce(col);
-                        if (peg.getColour() != Peg.COLOUR.GREY) {
-                            toBeDestroyed.add(peg);
+
+                    else if (ball.collideWith(peg)) {
+                        ball.onCollisionEnter(peg);
+                        if (peg instanceof OnCollisionRemove){
+                            OnCollisionRemove removal = (OnCollisionRemove)peg;
+                            toBeDestroyed.add(removal.onCollisionRemove());
+                        }
+
+                        if (peg instanceof OnCollisionCreate){
+                            toBeAdded.addAll(((OnCollisionCreate)peg).onCollisionCreate(ball));
                         }
                     }
                 }
             }
+
             else if (obj instanceof Ball) {
                 Ball ball = (Ball) obj;
-                ball.move();
-                if (ball.getPosition().getCentre().y > Window.getHeight()) {
-                    if (ball.getCollider().collideWith(bucket)){
+                if (ball.outOfScreen()){
+                    if (bucket.dropIntoBucket(ball)){
+                        ShadowBounce.LOGGER.log(Level.INFO, "ballLeft + 1");
                         ballLeft++;
-                        LOGGER.log(Level.INFO, "ballLeft + 1");
                     }
                     toBeDestroyed.add(ball);
                 }
             }
 
-            else if (obj instanceof Bucket){
-                bucket.move();
-            }
-
             else if (obj instanceof Powerup){
                 Powerup up = (Powerup)obj;
-                up.move();
-                FireBall fb = null;
                 for (Ball ball : balls) {
-                    if (ball.getCollider().collideWith(up)) {
+                    if (ball.collideWith(up)) {
+                        toBeAdded.addAll(up.onCollisionCreate(ball));
                         toBeDestroyed.add(up);
-                        fb = up.activate(ball);
                         toBeDestroyed.add(ball);
-                        renderer.add(fb);
-                        LOGGER.log(Level.INFO, "Powerup hit\n");
                     }
-                }
-                if (fb != null){
-                    balls.add(fb);
                 }
             }
         }
 
+        if (ballLeft==0){
+            Image gg = new Image("res/gameover.png");
+            gg.draw(Window.getWidth()/2, Window.getWidth()/2);
+        }
+
+        addToScreen();
+
+        if (removeFromScreen()){
+            nextTurn();
+        }
+
+
+        if (currBoard.getRedCount() == 0){
+            loadNextBoard();
+        }
+
+        for (GameObject g:onScreen){
+            g.render();
+        }
+
+    }
+
+    private void loadNextBoard() {
+        if (boardIter.hasNext()) {
+            onScreen.removeAll(balls);
+            balls.clear();
+            onScreen.removeAll(currBoard.asList());
+            currBoard = boardIter.next();
+            onScreen.addAll(currBoard.asList());
+            LOGGER.log(Level.INFO, "New board loaded\n");
+        }
+    }
+
+    private boolean removeFromScreen(){
+        boolean turnEnd = false;
         for (GameObject go : toBeDestroyed){
             if (go instanceof Peg){
-                Peg p = (Peg)go;
-                currBoard.remove(p);
-                if (p instanceof RedPeg){
-                    LOGGER.log(Level.INFO, String.format("Red ball destroyed. %d left\n", currBoard.getRedCount()));
-                }
-                else if (p instanceof GreenPeg){
-                    GreenPeg gr = (GreenPeg)p;
-                    balls.addAll(gr.duplicate(balls.get(0)));
-                    LOGGER.log(Level.INFO, "Bonus balls released\n");
-                    renderer.addAll((List)balls);
-                }
+                currBoard.remove((Peg)go);
             }
             else if (go instanceof Ball){
                 if (balls.size() == 1){
@@ -163,47 +176,27 @@ public class ShadowBounce extends AbstractGame {
                 balls.remove(go);
             }
         }
-
-        renderer.removeAll(toBeDestroyed);
+        onScreen.removeAll(toBeDestroyed);
         toBeDestroyed.clear();
-
-        if (ballLeft==0){
-            Image gg = new Image("res/gameover.png");
-            gg.draw(Window.getWidth()/2, Window.getWidth()/2);
-        }
-
-        if (turnEnd){
-            ballLeft--;
-            LOGGER.log(Level.INFO, String.format("New turn started. %d balls left\n", ballLeft));
-            renderer.removeAll(currBoard.asList());
-            generatePowerup();
-            currBoard.refreshGreenPeg();
-            renderer.addAll(currBoard.asList());
-        }
-
-        if (currBoard.getRedCount() == 0){
-            loadNextBoard();
-        }
-        renderer.render();
-
+        return turnEnd;
     }
 
-    public void loadNextBoard() {
-        if (boardIter.hasNext()) {
-            renderer.removeAll((List)balls);
-            balls.clear();
-            renderer.removeAll(currBoard.asList());
-            currBoard = boardIter.next();
-            renderer.addAll(currBoard.asList());
-            LOGGER.log(Level.INFO, "New board loaded\n");
+    private void addToScreen(){
+        for (GameObject go : toBeAdded){
+            if (go instanceof Ball){
+                balls.add((Ball)go);
+            }
         }
+        onScreen.addAll(toBeAdded);
+        toBeAdded.clear();
     }
 
-    public void generatePowerup(){
-        if (random.nextDouble() < Powerup.CHANCE){
-            Powerup up = new Powerup();
-            powerups.add(up);
-            renderer.add(up);
-        }
+    private void nextTurn(){
+        ballLeft--;
+        LOGGER.log(Level.INFO, String.format("New turn started. %d balls left\n", ballLeft));
+        onScreen.removeAll(currBoard.asList());
+        toBeDestroyed.addAll(Powerup.createPowerup());
+        currBoard.refreshGreenPeg();
+        onScreen.addAll(currBoard.asList());
     }
 }

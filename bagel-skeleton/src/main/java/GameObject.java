@@ -2,6 +2,9 @@ import bagel.*;
 import bagel.util.Point;
 import bagel.util.Rectangle;
 import bagel.util.Side;
+import bagel.util.Vector2;
+
+import java.util.function.BinaryOperator;
 
 /**
  * An abstract GameObject class representing
@@ -12,46 +15,45 @@ import bagel.util.Side;
  */
 
 abstract public class GameObject implements Renderable{
-    private Position position; // position of object on the screen
     private Image image; // image of the object
-    private Collider collider; // bounding box for collision detection
-
-    public GameObject(){
-        this.position = new Position();
-    }
-
-    // constructor for GameObject where both position and image are provided.
-    public GameObject(Point centre) {
-        this.position = new Position(centre, image.getWidth(),image.getHeight());
-    }
+    private Rectangle boundingBox;
 
     // constructor for GameObject where position, image and visibility are provided.
     public GameObject(Point centre, Image image) {
-        this.position = new Position(centre, image.getWidth(),image.getHeight());
         this.image = image;
         // Move the bounding box to the correct position.
-        this.collider = new Collider(position, image);
+        this.boundingBox = image.getBoundingBox();
+        this.boundingBox.moveTo(computeTopLeft(centre));
     }
 
     // copy constructor
     public GameObject(GameObject other) {
-        this.position = new Position(other.position.getCentre(), other.position.getTopLeft());
-        if (other.getImage() != null) {
-            this.image = other.image;
-            this.collider = new Collider(position, image);
-        }
+        this.image = other.image;
+        this.boundingBox = new Rectangle(boundingBox);
     }
 
     /* Return the position of the GameObject as a Point.
      */
-    public Position getPosition() {
-        return new Position(this.position);
+    public Point center() {
+        return boundingBox.centre();
+    }
+
+    public Point topLeft(){
+        return boundingBox.topLeft();
+    }
+
+    public Point computeTopLeft(Point center){
+        return new Point(center.x - image.getWidth()/2, center.y - image.getHeight()/2);
     }
 
     /* Moves the GameObject so that its centre is at the specified point. */
-    public void setPosition(Position position) {
-        this.position = position;
-        updateCollider();
+    public void moveTo(Point center) {
+        this.boundingBox.moveTo(computeTopLeft(center));
+    }
+
+
+    public Rectangle getBoundingBox(){
+        return new Rectangle(boundingBox);
     }
 
     /* Return the image of the GameObject */
@@ -59,33 +61,39 @@ abstract public class GameObject implements Renderable{
         return this.image;
     }
 
-    /*
-    Set the image of the GameObject
-     */
-    public void setImage(Image newImage) {
-        this.image = newImage;
+    public boolean collideWith(GameObject other){
+        return boundingBox.intersects(other.getBoundingBox());
     }
 
-    /* Return the Bounding Box of the gameObject as a Rectangle*/
-    public Collider getCollider() {
-        return new Collider(this.collider);
+    public <T extends GameObject & Movable> Side collideAtSide(T other){
+        Rectangle otherBoundingBox = other.getBoundingBox();
+        Point[] corners = {otherBoundingBox.topLeft(), otherBoundingBox.topRight(),
+                otherBoundingBox.bottomLeft(), otherBoundingBox.bottomRight()};
+
+        Side colSide;
+        for (Point p : corners){
+            if ((colSide = this.getBoundingBox().intersectedAt(p, other.velocity()))!=Side.NONE){
+                return colSide;
+            }
+        }
+        return Side.NONE;
     }
 
-    /* Set the Bounding Box of the gameObject with a given Rectangle*/
-    public void setCollider(Collider collider) {
-        this.collider = collider;
+    /* Return distance from this GameObject to another. */
+    public double distance(GameObject other){
+        return other.center().asVector().sub(this.center().asVector()).length();
     }
 
-    /* Move Bounding box to right position after position has been changed */
-    private void updateCollider() {
-        this.collider.moveTo(this.position);
+    /* Return distance from this GameObject to a point. */
+    public double distance(Point other){
+        return other.asVector().sub(this.center().asVector()).length();
     }
 
     /* Render the GameObject if its visibility is True */
     @ Override
     public void render() {
         if (this.image!=null){
-            this.image.draw(this.getPosition().getCentre().x, this.getPosition().getCentre().y);
+            this.image.draw(center().x, center().y);
         }
     }
 }
