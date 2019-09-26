@@ -3,9 +3,13 @@ import bagel.Window;
 import bagel.util.Point;
 import bagel.util.Vector2;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Random;
+import java.util.logging.Level;
 
-public class Powerup extends GameObject implements Movable {
+public class Powerup extends GameObject implements Movable, OnCollisionCreate, OnCollisionRemove {
     public static final double CHANCE = 0.1;
     public static final int MIN_DISTANCE = 5;
     public static final int SPEED = 3;
@@ -18,17 +22,39 @@ public class Powerup extends GameObject implements Movable {
         this.velocity = destination.asVector().sub(center().asVector()).normalised().mul(SPEED);
     }
 
-    /* Return a  object representing current movement of the object. */
-    public Vector2 velocity(){
-        return new Vector2(velocity.x, velocity.y);
-    }
-
-
     private static Point nextPoint(){
         Random random = new Random();
         return new Point(random.nextInt(Window.getWidth()), random.nextInt(Window.getHeight()));
     }
 
+    public static ArrayList<GameObject> createPowerup(){
+        Random random = new Random();
+        ArrayList<GameObject> lst = new ArrayList<>();
+        if (random.nextDouble() < Powerup.CHANCE){
+            Powerup pw = new Powerup();
+            lst.add(pw);
+        }
+        return lst;
+    }
+
+
+    @ Override
+    /* Return a  object representing current movement of the object. */
+    public Vector2 velocity(){
+        return new Vector2(velocity.x, velocity.y);
+    }
+
+    @ Override
+    public <T extends GameObject & Movable> Collection<GameObject> onCollisionCreate(T col){
+        ArrayList<GameObject> lst = new ArrayList<>();
+        ShadowBounce.LOGGER.log(Level.INFO, "Powerup hit\n");
+        if (col instanceof Ball){
+            lst.add(this.activate((Ball)col));
+        }
+        return lst;
+    }
+
+    @ Override
     public void move(){
         moveTo(this.center().asVector().add(velocity).asPoint());
 
@@ -38,7 +64,13 @@ public class Powerup extends GameObject implements Movable {
         }
     }
 
+    @ Override
+    public GameObject onCollisionRemove(){
+        return this;
+    }
+
     public FireBall activate(Ball incoming){
         return new FireBall(incoming);
     }
+
 }

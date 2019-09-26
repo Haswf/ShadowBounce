@@ -3,6 +3,8 @@ import bagel.Window;
 import bagel.util.Point;
 import bagel.util.Vector2;
 
+import java.util.logging.Level;
+
 public class Bucket extends GameObject implements Movable {
     public static Point INIT_POSITION = new Point(512, 744);
     public static double SPEED = 4;
@@ -17,16 +19,21 @@ public class Bucket extends GameObject implements Movable {
         return new Vector2(velocity.x, velocity.y);
     }
 
-    public void reverseHorizontal() {
+    private void reverseHorizontal() {
         this.velocity = new Vector2(-this.velocity.x, this.velocity.y);
     }
 
     /*
      Reverse vertical velocity
      */
-    public void reverseVertical() {
+    private void reverseVertical() {
         this.velocity = new Vector2(this.velocity.x, -this.velocity.y);
     }
+
+    public boolean dropIntoBucket(Ball ball) {
+        return (ball.outOfScreen() && ball.collideWith(this));
+    }
+
 
     @Override
     public void move(){

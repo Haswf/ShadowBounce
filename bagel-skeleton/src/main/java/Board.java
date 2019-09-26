@@ -57,34 +57,35 @@ public class Board{
         pegList.remove(p);
     }
 
-    private Peg getBlue(LinkedList<Peg> bluePeg){
+    private BluePeg getBlue(){
+        List<Peg> bluePeg = pegs.get(Peg.COLOUR.BLUE);
         Random random = new Random();
         int index = random.nextInt(bluePeg.size());
-        return bluePeg.get(index);
+        return (BluePeg) bluePeg.get(index);
     }
 
     private void convertToRedPeg(){
-        LinkedList<Peg> bluePeg = pegs.get(Peg.COLOUR.BLUE);
+        List bluePeg = pegs.get(Peg.COLOUR.BLUE);
         int total = bluePeg.size()/15;
         for (int i=0; i<total; i++){
-            Peg choice = getBlue(bluePeg);
-            RedPeg converted = RedPeg.toRedPeg(choice);
+            BluePeg choice = getBlue();
+            RedPeg converted = choice.toRed();
             add(converted);
             bluePeg.remove(choice);
         }
     }
 
     private void createGreenBall(){
-        Peg choice = getBlue(pegs.get(Peg.COLOUR.BLUE));
-        GreenPeg converted = GreenPeg.toGreenPeg(choice);
+        BluePeg choice = getBlue();
+        GreenPeg converted = choice.toGreen();
         add(converted);
         remove(choice);
     }
 
     public void refreshGreenPeg(){
         if (getGreenCount()>0){
-            Peg green = pegs.get(Peg.COLOUR.GREEN).getFirst();
-            BluePeg converted = BluePeg.toBluePeg(green);
+            GreenPeg green = (GreenPeg)pegs.get(Peg.COLOUR.GREEN).getFirst();
+            BluePeg converted = green.toBlue();
             add(converted);
             remove(green);
         }

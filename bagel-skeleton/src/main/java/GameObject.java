@@ -38,8 +38,8 @@ abstract public class GameObject implements Renderable{
         return boundingBox.centre();
     }
 
-    public void topLeft(){
-        this.boundingBox.topLeft();
+    public Point topLeft(){
+        return boundingBox.topLeft();
     }
 
     public Point computeTopLeft(Point center){

@@ -7,4 +7,8 @@ public class FireBall extends Ball {
         super(other.center(), new Image("res/fireball.png"), other.velocity());
     }
 
+    public boolean withinRangeDestroy(Peg p){
+        return p.distance(this) < FireBall.DESTROY_RANGE && p instanceof OnCollisionRemove;
+    }
+
 }

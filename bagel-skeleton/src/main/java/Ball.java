@@ -11,8 +11,7 @@ import java.util.logging.Logger;
  *
  * @author Shuyang Fan
  */
-public class Ball extends GameObject implements Movable{
-    private final static Logger LOGGER =  Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+public class Ball extends GameObject implements Movable, OnCollisionEnter{
     public static final Point INIT_POSITION = new Point(512, 32);
     public static final double INIT_SPEED = 10.0;
     // Acceleration due to gravity
@@ -24,6 +23,12 @@ public class Ball extends GameObject implements Movable{
         this.velocity = velocity;
     }
 
+    public static Ball shoot(Input input){
+        Ball ball = new Ball(Ball.INIT_POSITION, new Image("res/ball.png"), Vector2.down.mul(0));
+        Vector2 mouseDirection = input.getMousePosition().asVector().sub(Ball.INIT_POSITION.asVector()).normalised();
+        ball.setVelocity(mouseDirection.mul(Ball.INIT_SPEED));
+        return ball;
+    }
 
     private void setVelocity(Vector2 velocity){
         this.velocity = velocity;
@@ -33,7 +38,7 @@ public class Ball extends GameObject implements Movable{
         setVelocity(this.velocity.add(Vector2.down.mul(GRAVITY)));
     }
 
-    public void bounce(Side col){
+    private void bounce(Side col){
         if (col != Side.NONE) {
             if (col == Side.LEFT || col == Side.RIGHT) {
                 reverseHorizontal();
@@ -73,4 +78,8 @@ public class Ball extends GameObject implements Movable{
         return new Vector2(velocity.x, velocity.y);
     }
 
+    @ Override
+    public <T extends GameObject> void onCollisionEnter(T col){
+        this.bounce(col.collideAtSide(this));
+    }
 }
