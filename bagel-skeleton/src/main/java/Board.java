@@ -116,8 +116,4 @@ public class Board{
         }
         return list;
     }
-
-//    public Iterator<LinkedList<Peg>> iterPegs(){
-//        return this.pegs.values().iterator();
-//    }
 }

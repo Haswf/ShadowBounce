@@ -14,7 +14,7 @@ import java.util.function.BinaryOperator;
  * @author Shuyang Fan
  */
 
-abstract public class GameObject implements Renderable{
+abstract public class GameObject{
     private Image image; // image of the object
     private Rectangle boundingBox;
 
@@ -89,11 +89,7 @@ abstract public class GameObject implements Renderable{
         return other.asVector().sub(this.center().asVector()).length();
     }
 
-    /* Render the GameObject if its visibility is True */
-    @ Override
     public void render() {
-        if (this.image!=null){
-            this.image.draw(center().x, center().y);
-        }
+        this.image.draw(center().x, center().y);
     }
 }

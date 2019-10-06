@@ -12,7 +12,7 @@ public class GreenPeg extends Peg implements OnCollisionCreate, OnCollisionRemov
 
     public ArrayList<Ball> duplicate(Ball incoming){
         ArrayList<Ball> dups = new ArrayList<>();
-        double speed = 10.0/60;
+        double speed = 10.0;
 
         dups.add(new Ball(center(), incoming.getImage(),
                 Vector2.up.add(Vector2.left).mul(speed)));
