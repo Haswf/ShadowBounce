@@ -14,16 +14,16 @@ public class GreenPeg extends Peg implements OnCollisionCreate, OnCollisionRemov
         ArrayList<Ball> dups = new ArrayList<>();
         double speed = 10.0;
 
-        dups.add(new Ball(center(), incoming.getImage(),
+        dups.add(new Ball(getCenter(), incoming.getImage(),
                 Vector2.up.add(Vector2.left).mul(speed)));
-        dups.add(new Ball(center(), incoming.getImage(),
+        dups.add(new Ball(getCenter(), incoming.getImage(),
                 Vector2.up.add(Vector2.right).mul(speed)));
         return dups;
     }
 
     public BluePeg toBlue(){
         String path = imagePath(Colour.BLUE, getShape());
-        return new BluePeg(center(), new Image(path), getShape());
+        return new BluePeg(getCenter(), new Image(path), getShape());
     }
 
     @ Override

@@ -13,12 +13,12 @@ public class BluePeg extends Peg implements OnCollisionRemove{
 
     public RedPeg toRed(){
         String path = imagePath(Colour.RED, this.getShape());
-        return new RedPeg(this.center(), new Image(path), this.getShape());
+        return new RedPeg(this.getCenter(), new Image(path), this.getShape());
     }
 
     public GreenPeg toGreen(){
         String path = imagePath(Colour.GREEN, getShape());
-        return new GreenPeg(center(), new Image(path), getShape());
+        return new GreenPeg(getCenter(), new Image(path), getShape());
     }
 
 }

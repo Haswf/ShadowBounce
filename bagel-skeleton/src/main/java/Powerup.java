@@ -19,7 +19,7 @@ public class Powerup extends GameObject implements Movable, OnCollisionCreate, O
     public Powerup(){
         super(nextPoint(), new Image("res/powerup.png"));
         destination =nextPoint();
-        this.velocity = destination.asVector().sub(center().asVector()).normalised().mul(SPEED);
+        this.velocity = destination.asVector().sub(getCenter().asVector()).normalised().mul(SPEED);
     }
 
     private static Point nextPoint(){
@@ -46,11 +46,11 @@ public class Powerup extends GameObject implements Movable, OnCollisionCreate, O
 
     @ Override
     public void move(){
-        moveTo(this.center().asVector().add(velocity).asPoint());
+        setCenter(this.getCenter().asVector().add(velocity).asPoint());
 
         if (this.distance(this.destination) < MIN_DISTANCE){
             destination = nextPoint();
-            this.velocity = destination.asVector().sub(center().asVector()).normalised().mul(SPEED);
+            this.velocity = destination.asVector().sub(getCenter().asVector()).normalised().mul(SPEED);
         }
     }
 

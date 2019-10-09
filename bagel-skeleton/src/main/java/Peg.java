@@ -38,7 +38,7 @@ abstract public class Peg extends GameObject{
     public String toString(){
         return String.format("%s %s Peg (%f, %f)", this.shape.toString().toLowerCase(),
                 this.colour.toString().toLowerCase(),
-                this.center().x, this.center().y);
+                this.getCenter().x, this.getCenter().y);
     }
 
     public Colour getColour() {

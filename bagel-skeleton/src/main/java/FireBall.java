@@ -4,7 +4,7 @@ import bagel.util.Point;
 public class FireBall extends Ball {
     public final static int DESTROY_RANGE = 70;
     public FireBall(Ball other){
-        super(other.center(), new Image("res/fireball.png"), other.velocity());
+        super(other.getCenter(), new Image("res/fireball.png"), other.velocity());
     }
 
     public boolean withinRangeDestroy(Peg p){

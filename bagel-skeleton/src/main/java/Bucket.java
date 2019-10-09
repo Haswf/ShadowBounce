@@ -37,9 +37,9 @@ public class Bucket extends GameObject implements Movable {
 
     @Override
     public void move(){
-        Point newCentre = (center().asVector()).add(this.velocity).asPoint();
-        this.moveTo(newCentre);
-        if (center().x < getImage().getWidth()/2 || this.center().x > Window.getWidth()-getImage().getWidth()/2) {
+        Point newCentre = (getCenter().asVector()).add(this.velocity).asPoint();
+        this.setCenter(newCentre);
+        if (getCenter().x < getImage().getWidth()/2 || this.getCenter().x > Window.getWidth()-getImage().getWidth()/2) {
             reverseHorizontal();
         }
     }

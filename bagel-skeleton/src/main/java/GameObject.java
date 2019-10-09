@@ -34,7 +34,7 @@ abstract public class GameObject{
 
     /* Return the position of the GameObject as a Point.
      */
-    public Point center() {
+    public Point getCenter() {
         return boundingBox.centre();
     }
 
@@ -47,7 +47,7 @@ abstract public class GameObject{
     }
 
     /* Moves the GameObject so that its centre is at the specified point. */
-    public void moveTo(Point center) {
+    public void setCenter(Point center) {
         this.boundingBox.moveTo(computeTopLeft(center));
     }
 
@@ -66,30 +66,20 @@ abstract public class GameObject{
     }
 
     public <T extends GameObject & Movable> Side collideAtSide(T other){
-        Rectangle otherBoundingBox = other.getBoundingBox();
-        Point[] corners = {otherBoundingBox.topLeft(), otherBoundingBox.topRight(),
-                otherBoundingBox.bottomLeft(), otherBoundingBox.bottomRight()};
-
-        Side colSide;
-        for (Point p : corners){
-            if ((colSide = this.getBoundingBox().intersectedAt(p, other.velocity()))!=Side.NONE){
-                return colSide;
-            }
-        }
-        return Side.NONE;
+        return this.getBoundingBox().intersectedAt(this.getCenter(), other.velocity());
     }
 
     /* Return distance from this GameObject to another. */
     public double distance(GameObject other){
-        return other.center().asVector().sub(this.center().asVector()).length();
+        return other.getCenter().asVector().sub(this.getCenter().asVector()).length();
     }
 
     /* Return distance from this GameObject to a point. */
     public double distance(Point other){
-        return other.asVector().sub(this.center().asVector()).length();
+        return other.asVector().sub(this.getCenter().asVector()).length();
     }
 
     public void render() {
-        this.image.draw(center().x, center().y);
+        this.image.draw(getCenter().x, getCenter().y);
     }
 }

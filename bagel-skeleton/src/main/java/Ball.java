@@ -59,11 +59,11 @@ public class Ball extends GameObject implements Movable, OnCollisionEnter{
 
     @Override
     public void move(){
-        Point newCenter = (this.center().asVector()).add(this.velocity).asPoint();
-        this.moveTo(newCenter);
+        Point newCenter = (this.getCenter().asVector()).add(this.velocity).asPoint();
+        this.setCenter(newCenter);
         applyGravity();
 
-        if (this.center().x < 0 || this.center().x > Window.getWidth()) {
+        if (this.getCenter().x < 0 || this.getCenter().x > Window.getWidth()) {
             reverseHorizontal();
         }
     }
