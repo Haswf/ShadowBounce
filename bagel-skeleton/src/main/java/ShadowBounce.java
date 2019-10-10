@@ -38,8 +38,8 @@ public class ShadowBounce extends AbstractGame {
         onScreen = new ArrayList<>();
 
         boards = new ArrayList<>();
-        boards.add(new Board("res/0.csv"));
-        boards.add(new Board("res/0.csv"));
+        loadBoards();
+
         boardIter = boards.iterator();
         currBoard = boardIter.next();
 
@@ -198,5 +198,13 @@ public class ShadowBounce extends AbstractGame {
         toBeDestroyed.addAll(Powerup.createPowerup());
         currBoard.refreshGreenPeg();
         onScreen.addAll(currBoard.asList());
+    }
+
+    public void loadBoards(){
+        int i;
+        int boardNumber = 5;
+        for (i=0; i<boardNumber; i++){
+            boards.add(new Board(String.format("res/%d.csv", i)));
+        }
     }
 }
