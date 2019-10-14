@@ -77,49 +77,47 @@ public class ShadowBounce extends AbstractGame {
             Window.close();
         }
 
-        Iterator<GameObject> queueIter = onScreen.iterator();
-        while (queueIter.hasNext()) {
-            GameObject obj = queueIter.next();
-            if (obj instanceof Movable){
-                ((Movable)obj).move();
+        for (GameObject obj : onScreen) {
+            if (obj instanceof Movable) {
+                ((Movable) obj).move();
             }
 
             if (obj instanceof Peg) {
-                Peg peg = (Peg)obj;
+                Peg peg = (Peg) obj;
 
                 for (Ball ball : balls) {
-                    if (ball instanceof FireBall && ((FireBall)ball).withinRangeDestroy(peg)){
-                        OnCollisionRemove removal = (OnCollisionRemove)peg;
-                        toBeDestroyed.add(removal.onCollisionRemove());
-                    }
 
-                    else if (ball.collideWith(peg)) {
+                    if (ball.collideWith(peg)) {
                         ball.onCollisionEnter(peg);
-                        if (peg instanceof OnCollisionRemove){
-                            OnCollisionRemove removal = (OnCollisionRemove)peg;
+                        if (peg instanceof OnCollisionRemove) {
+                            OnCollisionRemove removal = (OnCollisionRemove) peg;
                             toBeDestroyed.add(removal.onCollisionRemove());
                         }
 
-                        if (peg instanceof OnCollisionCreate){
-                            toBeAdded.addAll(((OnCollisionCreate)peg).onCollisionCreate(ball));
+                        if (ball instanceof FireBall) {
+                            for (Peg p : currBoard.asList()) {
+                                if (((FireBall) ball).withinRangeDestroy(p)) {
+                                    toBeDestroyed.add(p);
+                                }
+                            }
+                        }
+                        if (peg instanceof OnCollisionCreate) {
+                            toBeAdded.addAll(((OnCollisionCreate) peg).onCollisionCreate(ball));
                         }
                     }
                 }
-            }
-
-            else if (obj instanceof Ball) {
+            } else if (obj instanceof Ball) {
                 Ball ball = (Ball) obj;
-                if (ball.outOfScreen()){
-                    if (bucket.dropIntoBucket(ball)){
-                        ShadowBounce.LOGGER.log(Level.INFO, "ballLeft + 1");
-                        ballLeft++;
-                    }
+                if (bucket.dropIntoBucket(ball)) {
+                    ShadowBounce.LOGGER.log(Level.INFO, "ballLeft + 1");
+                    toBeDestroyed.add(ball);
+                    ballLeft++;
+                }
+                if (ball.outOfScreen()) {
                     toBeDestroyed.add(ball);
                 }
-            }
-
-            else if (obj instanceof Powerup){
-                Powerup up = (Powerup)obj;
+            } else if (obj instanceof Powerup) {
+                Powerup up = (Powerup) obj;
                 for (Ball ball : balls) {
                     if (ball.collideWith(up)) {
                         toBeAdded.addAll(up.onCollisionCreate(ball));
@@ -128,11 +126,6 @@ public class ShadowBounce extends AbstractGame {
                     }
                 }
             }
-        }
-
-        if (ballLeft==0){
-            Image gg = new Image("res/gameover.png");
-            gg.draw(Window.getWidth()/2, Window.getWidth()/2);
         }
 
         addToScreen();
@@ -195,12 +188,12 @@ public class ShadowBounce extends AbstractGame {
         ballLeft--;
         LOGGER.log(Level.INFO, String.format("New turn started. %d balls left\n", ballLeft));
         onScreen.removeAll(currBoard.asList());
-        toBeDestroyed.addAll(Powerup.createPowerup());
         currBoard.refreshGreenPeg();
+        toBeAdded.addAll(Powerup.createPowerup());
         onScreen.addAll(currBoard.asList());
     }
 
-    public void loadBoards(){
+    private void loadBoards(){
         int i;
         int boardNumber = 5;
         for (i=0; i<boardNumber; i++){

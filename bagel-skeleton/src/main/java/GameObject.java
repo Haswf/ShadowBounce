@@ -38,10 +38,6 @@ abstract public class GameObject{
         return boundingBox.centre();
     }
 
-    public Point topLeft(){
-        return boundingBox.topLeft();
-    }
-
     private Point computeTopLeft(Point center){
         return new Point(center.x - image.getWidth()/2, center.y - image.getHeight()/2);
     }

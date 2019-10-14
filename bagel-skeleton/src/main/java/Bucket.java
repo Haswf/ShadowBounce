@@ -31,7 +31,7 @@ public class Bucket extends GameObject implements Movable {
     }
 
     public boolean dropIntoBucket(Ball ball) {
-        return (ball.outOfScreen() && ball.collideWith(this));
+        return ball.getBoundingBox().intersects(getBoundingBox()) && ball.getBoundingBox().top() < getBoundingBox().top();
     }
 
 

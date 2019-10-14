@@ -65,7 +65,7 @@ public class Board{
 
     private void convertToRedPeg(){
         List bluePeg = pegs.get(Peg.Colour.BLUE);
-        int total = bluePeg.size()/15;
+        int total = bluePeg.size()/5;
         for (int i=0; i<total; i++){
             BluePeg choice = getBlue();
             RedPeg converted = choice.toRed();
@@ -106,8 +106,8 @@ public class Board{
         }
     }
 
-    public List<GameObject> asList() {
-        List<GameObject> list = new ArrayList<>();
+    public ArrayList<Peg> asList() {
+        ArrayList<Peg> list = new ArrayList<>();
         for (Peg.Colour ty : Peg.Colour.values()) {
             LinkedList<Peg> pegList = this.pegs.get(ty);
             if (pegList != null) {
