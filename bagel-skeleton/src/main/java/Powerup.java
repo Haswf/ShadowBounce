@@ -10,7 +10,7 @@ import java.util.Random;
 import java.util.logging.Level;
 
 public class Powerup extends GameObject implements Movable, OnCollisionCreate, OnCollisionRemove {
-    public static final double CHANCE = 1;
+    public static final double CHANCE = 0.1;
     public static final int MIN_DISTANCE = 5;
     public static final int SPEED = 3;
     private Vector2 velocity;
