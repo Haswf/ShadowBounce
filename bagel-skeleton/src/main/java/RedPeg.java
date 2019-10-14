@@ -4,10 +4,20 @@ import bagel.util.Point;
 import java.util.logging.Level;
 
 public class RedPeg extends Peg implements OnCollisionRemove {
+    /**
+     *
+     * @param centre
+     * @param image
+     * @param shape
+     */
     public RedPeg(Point centre, Image image, Shape shape){
         super(centre, image, shape, Colour.RED);
     }
 
+    /**
+     *
+     * @return
+     */
     @ Override
     public GameObject onCollisionRemove(){
         ShadowBounce.LOGGER.log(Level.INFO, "Red ball destroyed.\n");

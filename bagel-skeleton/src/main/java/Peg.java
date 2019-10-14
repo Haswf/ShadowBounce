@@ -18,7 +18,7 @@ abstract public class Peg extends GameObject{
         RED,
         GREY,
         GREEN,
-    };
+    }
 
    public enum Shape{
         NORMAL,
@@ -29,26 +29,51 @@ abstract public class Peg extends GameObject{
     private Shape shape;
     private Colour colour;
 
+    /**
+     *
+     * @param centre
+     * @param image
+     * @param shape
+     * @param colour
+     */
     public Peg(Point centre, Image image, Shape shape, Colour colour){
         super(centre, image);
         this.shape = shape;
         this.colour = colour;
     }
 
+    /**
+     *
+     * @return
+     */
     public String toString(){
         return String.format("%s %s Peg (%f, %f)", this.shape.toString().toLowerCase(),
                 this.colour.toString().toLowerCase(),
                 this.getCenter().x, this.getCenter().y);
     }
 
+    /**
+     *
+     * @return
+     */
     public Colour getColour() {
         return colour;
     }
 
+    /**
+     *
+     * @return
+     */
     public Shape getShape(){
         return this.shape;
     }
 
+    /**
+     *
+     * @param Colour
+     * @param shape
+     * @return
+     */
     public static String imagePath(Peg.Colour Colour, Peg.Shape shape){
         if (shape == Shape.NORMAL){
             return "res/" + Colour.toString().toLowerCase() + "-peg.png";
@@ -58,6 +83,11 @@ abstract public class Peg extends GameObject{
         }
     }
 
+    /**
+     *
+     * @param str
+     * @return
+     */
     public static Peg.Colour parseColor(String str){
         for (Peg.Colour Colour : Peg.Colour.values()){
             if (str.contains(Colour.toString().toLowerCase())){
@@ -67,8 +97,12 @@ abstract public class Peg extends GameObject{
         return Peg.Colour.BLUE;
     }
 
+    /**
+     *
+     * @param str
+     * @return
+     */
     public static Peg.Shape parseShape(String str){
-        String c;
         for (Peg.Shape shape : Peg.Shape.values()){
             if (str.contains(shape.toString().toLowerCase())){
                 return shape;

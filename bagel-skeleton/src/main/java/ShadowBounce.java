@@ -10,35 +10,37 @@ import java.util.logging.Logger;
  */
 public class ShadowBounce extends AbstractGame {
     // Get global logger for debug
+    private final static int TotalBoard = 5;
+    //
+    private final static int TotalBall = 20;
     public final static Logger LOGGER =
             Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+    private Board currBoard;
+    // board iterator used to switch to next board
+    private Iterator<Board> boardIter;
+
     // An ArrayList storing balls
+    private int ballLeft = TotalBall;
+    // An ArrayList of balls representing balls on the screen.
     private ArrayList<Ball> balls;
-
-    private ArrayList<Powerup> powerups;
-    private ArrayList<GameObject> onScreen;
-
     private Bucket bucket;
 
-    private ArrayList<Board> boards;
-    private Board currBoard;
-    private Iterator<Board> boardIter;
-    private int ballLeft = 20;
-    private HashMap<Class, ArrayList<GameObject>> GameObjectManager;
+    // All GameObjects on the screen;
+    private ArrayList<GameObject> onScreen;
+    // GameObjects to be removed in the next frame
     private ArrayList<GameObject> toRemove;
+
+    // GameObjects to be added to the screen in the next frame
     private ArrayList<GameObject> toAdd;
 
     /* ShadowBounce */
     public ShadowBounce() {
         toRemove = new ArrayList<>();
         toAdd = new ArrayList<>();
-        GameObjectManager = new HashMap<>();
-
 
         onScreen = new ArrayList<>();
-
-        boards = new ArrayList<>();
-        loadBoards();
+        // Load boards from csv
+        ArrayList<Board> boards = loadBoards();
 
         boardIter = boards.iterator();
         currBoard = boardIter.next();
@@ -46,11 +48,10 @@ public class ShadowBounce extends AbstractGame {
         bucket = new Bucket();
         toAdd.add(bucket);
 
-        powerups = new ArrayList<>();
         toAdd.addAll(Powerup.createPowerup());
 
         balls = new ArrayList<>();
-        //toAdd.addAll(currBoard.asList());
+        toAdd.addAll(currBoard.asList());
     }
 
 
@@ -64,10 +65,9 @@ public class ShadowBounce extends AbstractGame {
      * Performs a state update. This simple example shows an image that can be controlled with the arrow keys, and
      * allows the game to exit when the escape key is pressed.
      */
-
     @Override
     public void update(Input input) {
-
+        // Only shoot a new ball if there is more than 0 ball left
         if (input.isDown(MouseButtons.LEFT) && balls.size()==0 && ballLeft>0) {
             toAdd.add(Ball.shoot(input));
         }
@@ -86,7 +86,6 @@ public class ShadowBounce extends AbstractGame {
                 Peg peg = (Peg) obj;
 
                 for (Ball ball : balls) {
-
                     if (ball.collideWith(peg)) {
                         ball.onCollisionEnter(peg);
                         if (peg instanceof OnCollisionRemove) {
@@ -95,18 +94,16 @@ public class ShadowBounce extends AbstractGame {
                         }
 
                         if (ball instanceof FireBall) {
-                            for (Peg p : currBoard.asList()) {
-                                if (((FireBall) ball).withinRangeDestroy(p)) {
-                                    toRemove.add(p);
-                                }
-                            }
+                            toRemove.addAll(peg.withinRange(currBoard.asList(), FireBall.DESTROY_RANGE));
                         }
                         if (peg instanceof OnCollisionCreate) {
                             toAdd.addAll(((OnCollisionCreate) peg).onCollisionCreate(ball));
                         }
                     }
                 }
-            } else if (obj instanceof Ball) {
+            }
+
+            else if (obj instanceof Ball) {
                 Ball ball = (Ball) obj;
                 if (bucket.dropIntoBucket(ball)) {
                     ShadowBounce.LOGGER.log(Level.INFO, "ballLeft + 1");
@@ -116,22 +113,23 @@ public class ShadowBounce extends AbstractGame {
                 if (ball.outOfScreen()) {
                     toRemove.add(ball);
                 }
+
             } else if (obj instanceof Powerup) {
                 Powerup powerup = (Powerup) obj;
                 for (Ball ball : balls) {
                     if (ball.collideWith(powerup)) {
                         toAdd.addAll(powerup.onCollisionCreate(ball));
                         toRemove.add(powerup);
+                        toRemove.add(ball);
                     }
                 }
             }
         }
 
-
         addToScreen();
-        boolean isEnd = removeFromScreen();
+        removeFromScreen();
 
-        if (isEnd){
+        if (turnEnd()){
             nextTurn();
         }
 
@@ -156,24 +154,25 @@ public class ShadowBounce extends AbstractGame {
         }
     }
 
-    private boolean removeFromScreen(){
-        boolean turnEnd = false;
+    /**
+     *
+     */
+    private void removeFromScreen(){
         for (GameObject go : toRemove){
             if (go instanceof Peg){
                 currBoard.remove((Peg)go);
             }
             else if (go instanceof Ball){
-                if (balls.size() == 1){
-                    turnEnd = true;
-                }
                 balls.remove(go);
             }
         }
         onScreen.removeAll(toRemove);
         toRemove.clear();
-        return turnEnd;
     }
 
+    /**
+     * Add each object in ToAdd to Screen
+     */
     private void addToScreen(){
         for (GameObject go : toAdd){
             if (go instanceof Ball){
@@ -184,6 +183,21 @@ public class ShadowBounce extends AbstractGame {
         toAdd.clear();
     }
 
+    /**
+     * Return
+     * @return if this turn ended (i.e. there's no ball on the screen)
+     */
+    private boolean turnEnd(){
+        /* ballLeft is compared with TotalBall to handle the case
+         * that at the start of the game, there is no ball on the screen.
+         */
+
+        return balls.size() == 0 && ballLeft != TotalBall;
+    }
+
+    /*
+     *
+     */
     private void nextTurn(){
         ballLeft--;
         LOGGER.log(Level.INFO, String.format("New turn started. %d balls left\n", ballLeft));
@@ -193,11 +207,15 @@ public class ShadowBounce extends AbstractGame {
         onScreen.addAll(Powerup.createPowerup());
     }
 
-    private void loadBoards(){
-        int i;
-        int boardNumber = 5;
-        for (i=0; i<boardNumber; i++){
+    /**
+     * Load boards from csv
+     * @return An ArrayList of boards read from csv
+     */
+    private ArrayList<Board> loadBoards(){
+        ArrayList<Board> boards = new ArrayList<>();
+        for (int i = 0; i< ShadowBounce.TotalBoard; i++){
             boards.add(new Board(String.format("res/%d.csv", i)));
         }
+        return boards;
     }
 }

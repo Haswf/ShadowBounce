@@ -14,32 +14,30 @@ public class Bucket extends GameObject implements Movable {
     // Initial position of bucket on creation
     private static Point INIT_POSITION = new Point(512, 744);
     // Speed of the bucket
-    private static double SPEED = 4;
+    private final static double INIT_SPEED = 4;
     private Vector2 velocity;
 
+    /**
+     *
+     */
     public Bucket(){
         super(INIT_POSITION, new Image("res/bucket.png"));
-        this.velocity = Vector2.left.mul(SPEED);
+        this.velocity = Vector2.left.mul(INIT_SPEED);
     }
 
-    /* Return a Vector2 object representing current velocity of the object. */
-    /* @Para
+    /**
+     * Return a Vector2 object representing current velocity of the object.
+     * @return
      */
     public Vector2 velocity(){
         return new Vector2(velocity.x, velocity.y);
     }
 
-    /* Reverse horizontal movement of the bucket
+    /**
+     * Reverse horizontal movement of the bucket
      */
     private void reverseHorizontal() {
         this.velocity = new Vector2(-this.velocity.x, this.velocity.y);
-    }
-
-    /*
-     Reverse vertical velocity
-     */
-    private void reverseVertical() {
-        this.velocity = new Vector2(this.velocity.x, -this.velocity.y);
     }
 
     /* Return if a specific ball 'drops' into the bucket.
@@ -57,6 +55,8 @@ public class Bucket extends GameObject implements Movable {
      */
     @Override
     public void move(){
+        /* Reverse horizontal movement of the bucket if it reaches the left or the right side
+        */
         if (getBoundingBox().left() < 0 || getBoundingBox().right() > Window.getWidth()) {
             reverseHorizontal();
         }

@@ -23,6 +23,11 @@ public class Ball extends GameObject implements Movable, OnCollisionEnter{
         this.velocity = velocity;
     }
 
+    /**
+     *
+     * @param input
+     * @return
+     */
     public static Ball shoot(Input input){
         Ball ball = new Ball(Ball.INIT_POSITION, new Image("res/ball.png"), Vector2.down.mul(0));
         Vector2 mouseDirection = input.getMousePosition().asVector().sub(Ball.INIT_POSITION.asVector()).normalised();
@@ -30,14 +35,25 @@ public class Ball extends GameObject implements Movable, OnCollisionEnter{
         return ball;
     }
 
+    /**
+     *
+     * @param velocity
+     */
     private void setVelocity(Vector2 velocity){
         this.velocity = velocity;
     }
 
+    /**
+     *
+     */
     private void applyGravity(){
         setVelocity(this.velocity.add(Vector2.down.mul(GRAVITY)));
     }
 
+    /**
+     *
+     * @param col
+     */
     private void bounce(Side col){
         if (col != Side.NONE) {
             if (col == Side.LEFT || col == Side.RIGHT) {
@@ -48,15 +64,23 @@ public class Ball extends GameObject implements Movable, OnCollisionEnter{
         }
     }
 
+    /**
+     *
+     */
     private void reverseHorizontal() {
         this.velocity = new Vector2(-this.velocity.x, this.velocity.y);
     }
 
-    /* Reverse vertical velocity */
+    /**
+     *
+     */
     private void reverseVertical() {
         this.velocity = new Vector2(this.velocity.x, -this.velocity.y);
     }
 
+    /**
+     *
+     */
     @Override
     public void move(){
         Point newCenter = (this.getCenter().asVector()).add(this.velocity).asPoint();
@@ -68,6 +92,10 @@ public class Ball extends GameObject implements Movable, OnCollisionEnter{
         }
     }
 
+    /**
+     *
+     * @return
+     */
     public boolean outOfScreen() {
         return this.getBoundingBox().top() > Window.getHeight();
     }
@@ -78,6 +106,11 @@ public class Ball extends GameObject implements Movable, OnCollisionEnter{
         return new Vector2(velocity.x, velocity.y);
     }
 
+    /**
+     *
+     * @param col
+     * @param <T>
+     */
     @ Override
     public <T extends GameObject> void onCollisionEnter(T col){
         this.bounce(col.collideAtSide(this));
