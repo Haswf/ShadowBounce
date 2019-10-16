@@ -3,6 +3,8 @@ import bagel.Window;
 import bagel.util.Point;
 import bagel.util.Vector2;
 
+import java.util.logging.Level;
+
 /*
  * This class implements a bucket in ShadowBounce.
  * @author Shuyang Fan
@@ -10,36 +12,17 @@ import bagel.util.Vector2;
  */
 
 
-public class Bucket extends GameObject implements Movable {
+public class Bucket extends GameObject implements OnCollisionEnter{
     // Initial position of bucket on creation
     private static Point INIT_POSITION = new Point(512, 744);
     // Speed of the bucket
-    private static double SPEED = 4;
-    private Vector2 velocity;
+    private final static double INIT_SPEED = 4;
 
+    /**
+     *
+     */
     public Bucket(){
-        super(INIT_POSITION, new Image("res/bucket.png"));
-        this.velocity = Vector2.left.mul(SPEED);
-    }
-
-    /* Return a Vector2 object representing current velocity of the object. */
-    /* @Para
-     */
-    public Vector2 velocity(){
-        return new Vector2(velocity.x, velocity.y);
-    }
-
-    /* Reverse horizontal movement of the bucket
-     */
-    private void reverseHorizontal() {
-        this.velocity = new Vector2(-this.velocity.x, this.velocity.y);
-    }
-
-    /*
-     Reverse vertical velocity
-     */
-    private void reverseVertical() {
-        this.velocity = new Vector2(this.velocity.x, -this.velocity.y);
+        super(INIT_POSITION, new Image("res/bucket.png"),  Vector2.left.mul(INIT_SPEED));
     }
 
     /* Return if a specific ball 'drops' into the bucket.
@@ -57,11 +40,23 @@ public class Bucket extends GameObject implements Movable {
      */
     @Override
     public void move(){
+        super.move();
+        /* Reverse horizontal movement of the bucket if it reaches the left or the right side
+        */
         if (getBoundingBox().left() < 0 || getBoundingBox().right() > Window.getWidth()) {
             reverseHorizontal();
         }
-        // Move the bucket using current speed
-        this.setCenter(getCenter().asVector().add(this.velocity).asPoint());
+    }
+
+    @Override
+    public <T extends GameObject> void onCollisionEnter(ShadowBounce game, T col) {
+        if (col instanceof Ball){
+            if (dropIntoBucket((Ball)col)) {
+                ShadowBounce.LOGGER.log(Level.INFO, "ballLeft + 1");
+                game.removeGameObject(col);
+                game.setBallLeft(game.getBallLeft()+1);
+            }
+        }
     }
 }
 
