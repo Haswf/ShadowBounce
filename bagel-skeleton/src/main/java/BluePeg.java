@@ -1,9 +1,9 @@
 import bagel.Image;
 import bagel.util.Point;
 
-public class BluePeg extends Peg implements OnCollisionRemove{
+public class BluePeg extends Peg implements Destroyable{
     /**
-     *
+     * BluePeg Constructor
      * @param centre
      * @param image
      * @param shape
@@ -13,16 +13,7 @@ public class BluePeg extends Peg implements OnCollisionRemove{
     }
 
     /**
-     *
-     * @return
-     */
-    @ Override
-    public GameObject onCollisionRemove(){
-        return this;
-    }
-
-    /**
-     *
+     * Convert the blue peg ino
      * @return
      */
     public RedPeg toRed(){
@@ -39,4 +30,13 @@ public class BluePeg extends Peg implements OnCollisionRemove{
         return new GreenPeg(getCenter(), new Image(path), getShape());
     }
 
+    @Override
+    public void destroy(ShadowBounce game) {
+        game.removeGameObject(this);
+    }
+
+    @Override
+    public <T extends GameObject> void onCollisionEnter(ShadowBounce game, T col) {
+        destroy(game);
+    }
 }

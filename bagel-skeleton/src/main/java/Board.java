@@ -1,6 +1,9 @@
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 import bagel.Image;
 import bagel.util.Point;
 
@@ -95,13 +98,18 @@ public class Board{
      * Randomly choose a blue peg on the board
      * @return the blue peg picked
      */
-    private BluePeg getBlue(){
+    private BluePeg getBlue() throws NoBluePegException {
         // Retrieve the ArrayList of blue peg from pegs
         ArrayList<Peg> bluePeg = pegs.get(Peg.Colour.BLUE);
-        Random random = new Random();
-        // Randomly pick a blue peg by using a random index
-        int index = random.nextInt(bluePeg.size());
-        return (BluePeg) bluePeg.get(index);
+        if (bluePeg.size() == 0){
+            throw new NoBluePegException(String.format("%d blue peg remains\n", bluePeg.size()));
+        }
+        else {
+            Random random = new Random();
+            // Randomly pick a blue peg by using a random index
+            int index = random.nextInt(bluePeg.size());
+            return (BluePeg) bluePeg.get(index);
+        }
     }
 
     /**
@@ -112,11 +120,19 @@ public class Board{
         // Determine the number of red pegs to create
         float total = bluePeg.size() * RED_RATIO;
         for (int i=0; i<total; i++){
-            BluePeg choice = getBlue();
-            // Convert the selected peg to red
-            add(choice.toRed());
-            // Remove the lucky blue peg from the board
-            bluePeg.remove(choice);
+            try {
+                BluePeg choice = getBlue();
+                // Convert the selected peg to red
+                add(choice.toRed());
+                // Remove the lucky blue peg from the board
+                bluePeg.remove(choice);
+            }
+            catch (NoBluePegException ignore){
+                ShadowBounce.LOGGER.log(Level.WARNING,
+                        String.format("Failed to convert %d/%d BluePeg to RedPeg: NoBluePegException\n", i, (int)total));
+                break;
+            }
+
         }
     }
 
@@ -124,9 +140,16 @@ public class Board{
      * Select a blue peg from the board and convert it to a green peg
      */
     private void createGreenBall(){
-        BluePeg choice = getBlue();
-        add(choice.toGreen());
-        remove(choice);
+        try {
+            BluePeg choice = getBlue();
+            add(choice.toGreen());
+            remove(choice);
+        }
+        catch (NoBluePegException ignored){
+            ShadowBounce.LOGGER.log(Level.WARNING, "Failed to convert a blue peg to green peg: NoBluePegException");
+        }
+
+
     }
 
     /**

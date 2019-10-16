@@ -1,5 +1,3 @@
-import java.util.Collection;
-
 public interface OnCollisionEnter {
-        public <T extends GameObject> void onCollisionEnter(T col);
+        public <T extends GameObject> void onCollisionEnter(ShadowBounce game, T col);
 }

@@ -6,37 +6,55 @@ import bagel.util.Vector2;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.function.BinaryOperator;
+import java.util.Vector;
 
 /**
- * An abstract GameObject class representing
- * something on the screen.
- * A typical GameObject has a position,
- * image, visibility and bounding box.
+ * An abstract class representing
+ * GameObject on the screen.
  * @author Shuyang Fan
  */
 
 abstract public class GameObject{
     private Image image;
     private Rectangle boundingBox;
+    private Vector2 velocity;
 
-    // constructor for GameObject where position, image are provided.
+    /**
+     * GameObject constructor with provided position, image.
+     * @param centre
+     * @param image
+     */
     public GameObject(Point centre, Image image) {
         this.image = image;
+        // get bounding box from image
         this.boundingBox = image.getBoundingBox();
+        this.velocity = Vector2.down.mul(0);
         // Move the bounding box to the correct position.
         this.boundingBox.moveTo(computeTopLeft(centre));
     }
 
-    // copy constructor
+    public GameObject(Point centre, Image image, Vector2 velocity) {
+        this.image = image;
+        // get bounding box from image
+        this.boundingBox = image.getBoundingBox();
+        this.velocity = velocity;
+        // Move the bounding box to the correct position.
+        this.boundingBox.moveTo(computeTopLeft(centre));
+    }
+
+
+    /**
+     * Copy constructor for GameObject
+     * @param other GameObject to be duplicated.
+     */
     public GameObject(GameObject other) {
         this.image = other.image;
         this.boundingBox = new Rectangle(other.boundingBox);
     }
 
     /**
-     * Return the centre of the GameObject on the screen.
-     * @return a Point representing the centre of the GameObject.
+     * Return the position of GameObject's center
+     * @return a Vector2 representing the centre of the GameObject.
      */
     public Point getCenter() {
         return boundingBox.centre();
@@ -44,7 +62,7 @@ abstract public class GameObject{
 
     /**
      * Compute the TopLeft point of a GameObject given its center
-     * @param center
+     * @param center The center of the GameObject
      * @return The TopLeft coordinate of the GameObject
      */
     private Point computeTopLeft(Point center){
@@ -52,24 +70,32 @@ abstract public class GameObject{
     }
 
     /**
-     * Move a GameObject's center to a given point
+     * Move a GameObject's center to a given position defined by a point.
      * @param center the point where the GameObject's center will be removed to.
      */
     public void setCenter(Point center) {
         this.boundingBox.moveTo(computeTopLeft(center));
     }
 
+    public Vector2 getVelocity() {
+        return velocity;
+    }
+
+    public void setVelocity(Vector2 velocity) {
+        this.velocity = velocity;
+    }
+
     /**
-     * Get bounding box of a GameObject
-     * @return a rectangle representing the bounding box of the GameObject
+     * Get bounding box of a GameObject.
+     * @return a rectangle representing the bounding box of the GameObject.
      */
     public Rectangle getBoundingBox(){
         return new Rectangle(boundingBox);
     }
 
     /**
-     * Return image of a GameObject
-     * @return the image of a GameObject
+     * Return image of the GameObject
+     * @return the image of the GameObject
      */
     public Image getImage() {
         return this.image;
@@ -85,25 +111,14 @@ abstract public class GameObject{
     }
 
     /**
-     *
-     * @param movable
+     * Concude
+     * @param other a GameObject with which
      * @param <T> any class that extends from GameObject and implements Movable interface
      * @return The Side indicating where the collision occurs. Returns None if no collision
      * will occur.
      */
-    public <T extends GameObject & Movable> Side collideAtSide(T movable){
-        //return this.getBoundingBox().intersectedAt(getCenter(), other.velocity());
-        Rectangle otherBoundingBox = movable.getBoundingBox();
-        Point[] corners = {otherBoundingBox.topLeft(), otherBoundingBox.topRight(),
-                otherBoundingBox.bottomLeft(), otherBoundingBox.bottomRight()};
-
-        Side colSide;
-        for (Point p : corners){
-            if ((colSide = this.getBoundingBox().intersectedAt(p, movable.velocity()))!=Side.NONE){
-                return colSide;
-            }
-        }
-        return Side.NONE;
+    public <T extends GameObject> Side collideAtSide(T other){
+        return getBoundingBox().intersectedAt(getCenter(), other.getVelocity());
     }
 
     /* Return distance from this GameObject to another. */
@@ -134,9 +149,29 @@ abstract public class GameObject{
     }
 
     /**
-     *
+     * Reverse horizontal direction
      */
-    public void render() {
+    public void reverseHorizontal() {
+        this.velocity = new Vector2(-this.velocity.x, this.velocity.y);
+    }
+
+    /**
+     * Reverse vertical direction
+     */
+    public void reverseVertical() {
+        this.velocity = new Vector2(this.velocity.x, -this.velocity.y);
+    }
+
+    public void move(){
+        setCenter(getCenter().asVector().add(velocity).asPoint());
+    }
+
+    private void render() {
         this.image.draw(getCenter().x, getCenter().y);
+    }
+
+    public void update(ShadowBounce shadowBounce){
+        move();
+        render();
     }
 }

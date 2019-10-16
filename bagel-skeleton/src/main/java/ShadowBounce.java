@@ -11,10 +11,10 @@ import java.util.logging.Logger;
 public class ShadowBounce extends AbstractGame {
     // Get global logger for debug
     private final static int TotalBoard = 5;
-    //
     private final static int TotalBall = 20;
     public final static Logger LOGGER =
             Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
+
     private Board currBoard;
     // board iterator used to switch to next board
     private Iterator<Board> boardIter;
@@ -24,7 +24,8 @@ public class ShadowBounce extends AbstractGame {
     // An ArrayList of balls representing balls on the screen.
     private ArrayList<Ball> balls;
     private Bucket bucket;
-
+    //private Powerup powerup;
+    private ArrayList<Powerup> powerups;
     // All GameObjects on the screen;
     private ArrayList<GameObject> onScreen;
     // GameObjects to be removed in the next frame
@@ -32,7 +33,7 @@ public class ShadowBounce extends AbstractGame {
 
     // GameObjects to be added to the screen in the next frame
     private ArrayList<GameObject> toAdd;
-
+    private boolean turnEnd;
     /* ShadowBounce */
     public ShadowBounce() {
         toRemove = new ArrayList<>();
@@ -45,15 +46,28 @@ public class ShadowBounce extends AbstractGame {
         boardIter = boards.iterator();
         currBoard = boardIter.next();
 
-        bucket = new Bucket();
-        toAdd.add(bucket);
 
-        toAdd.addAll(Powerup.createPowerup());
+        bucket = new Bucket();
+        addGameObject(bucket);
+
+        powerups = new ArrayList<>();
+        addGameObject(Powerup.createPowerup());
 
         balls = new ArrayList<>();
-        toAdd.addAll(currBoard.asList());
+        addGameObject(currBoard.asList());
     }
 
+    public int getBallLeft(){
+        return ballLeft;
+    }
+
+    public void setBallLeft(int left){
+        this.ballLeft = left;
+    }
+
+    public Board getCurrBoard() {
+        return currBoard;
+    }
 
     /* The entry point for the program. */
     public static void main(String[] args) {
@@ -68,8 +82,9 @@ public class ShadowBounce extends AbstractGame {
     @Override
     public void update(Input input) {
         // Only shoot a new ball if there is more than 0 ball left
-        if (input.isDown(MouseButtons.LEFT) && balls.size()==0 && ballLeft>0) {
-            toAdd.add(Ball.shoot(input));
+        if (input.isDown(MouseButtons.LEFT) && balls.size() == 0 && ballLeft > 0) {
+            addGameObject(Ball.shoot(input.getMousePosition()));
+            ballLeft--;
         }
 
         // Quit game if ESCAPE key was pressed
@@ -77,79 +92,48 @@ public class ShadowBounce extends AbstractGame {
             Window.close();
         }
 
-        for (GameObject obj : onScreen) {
-            if (obj instanceof Movable) {
-                ((Movable) obj).move();
-            }
-
-            if (obj instanceof Peg) {
-                Peg peg = (Peg) obj;
-
-                for (Ball ball : balls) {
-                    if (ball.collideWith(peg)) {
-                        ball.onCollisionEnter(peg);
-                        if (peg instanceof OnCollisionRemove) {
-                            OnCollisionRemove removal = (OnCollisionRemove) peg;
-                            toRemove.add(removal.onCollisionRemove());
-                        }
-
-                        if (ball instanceof FireBall) {
-                            toRemove.addAll(peg.withinRange(currBoard.asList(), FireBall.DESTROY_RANGE));
-                        }
-                        if (peg instanceof OnCollisionCreate) {
-                            toAdd.addAll(((OnCollisionCreate) peg).onCollisionCreate(ball));
-                        }
-                    }
+        for (Ball ball : balls) {
+            for (Peg peg : currBoard.asList()) {
+                if (ball.collideWith(peg)) {
+                    ball.onCollisionEnter(this, peg);
+                    peg.onCollisionEnter(this, ball);
                 }
             }
 
-            else if (obj instanceof Ball) {
-                Ball ball = (Ball) obj;
-                if (bucket.dropIntoBucket(ball)) {
-                    ShadowBounce.LOGGER.log(Level.INFO, "ballLeft + 1");
-                    toRemove.add(ball);
-                    ballLeft++;
+            for (Powerup powerup : powerups) {
+                if (ball.collideWith(powerup)) {
+                    powerup.onCollisionEnter(this, ball);
                 }
-                if (ball.outOfScreen()) {
-                    toRemove.add(ball);
-                }
-
-            } else if (obj instanceof Powerup) {
-                Powerup powerup = (Powerup) obj;
-                for (Ball ball : balls) {
-                    if (ball.collideWith(powerup)) {
-                        toAdd.addAll(powerup.onCollisionCreate(ball));
-                        toRemove.add(powerup);
-                        toRemove.add(ball);
-                    }
-                }
+            }
+            if (ball.collideWith(bucket)){
+                bucket.onCollisionEnter(this, ball);
             }
         }
 
         addToScreen();
         removeFromScreen();
 
-        if (turnEnd()){
+        if (turnEnd) {
             nextTurn();
+            turnEnd = false;
         }
 
-
-        if (currBoard.getRedCount() == 0){
+        if (currBoard.getRedCount() == 0) {
             loadNextBoard();
         }
 
-        for (GameObject g:onScreen){
-            g.render();
+        for (GameObject g : onScreen) {
+            g.update(this);
+            }
         }
-    }
 
-    private void loadNextBoard() {
+    private void loadNextBoard () {
         if (boardIter.hasNext()) {
-            onScreen.removeAll(balls);
-            balls.clear();
-            onScreen.removeAll(currBoard.asList());
+            removeGameObject(onScreen);
+            removeFromScreen();
+            addGameObject(bucket);
             currBoard = boardIter.next();
-            onScreen.addAll(currBoard.asList());
+            addGameObject(currBoard.asList());
             LOGGER.log(Level.INFO, "New board loaded\n");
         }
     }
@@ -157,13 +141,17 @@ public class ShadowBounce extends AbstractGame {
     /**
      *
      */
-    private void removeFromScreen(){
-        for (GameObject go : toRemove){
-            if (go instanceof Peg){
-                currBoard.remove((Peg)go);
-            }
-            else if (go instanceof Ball){
+    private void removeFromScreen () {
+        for (GameObject go : toRemove) {
+            if (go instanceof Peg) {
+                currBoard.remove((Peg) go);
+            } else if (go instanceof Ball) {
+                if (balls.size() == 1) {
+                    turnEnd = true;
+                }
                 balls.remove(go);
+            } else if (go instanceof Powerup) {
+                powerups.remove(go);
             }
         }
         onScreen.removeAll(toRemove);
@@ -173,42 +161,38 @@ public class ShadowBounce extends AbstractGame {
     /**
      * Add each object in ToAdd to Screen
      */
-    private void addToScreen(){
-        for (GameObject go : toAdd){
-            if (go instanceof Ball){
-                balls.add((Ball)go);
+    private void addToScreen () {
+        for (GameObject go : toAdd) {
+            // if a new ball is created, add it to balls.
+            if (go instanceof Ball) {
+                balls.add((Ball) go);
+            }
+            // if a new powerup is created, add it to powerups.
+            else if (go instanceof Powerup) {
+                powerups.add((Powerup) go);
             }
         }
+        // Add all GameObject to the screen.
         onScreen.addAll(toAdd);
+        // Clear toAdd for next frame.
         toAdd.clear();
-    }
-
-    /**
-     * Return
-     * @return if this turn ended (i.e. there's no ball on the screen)
-     */
-    private boolean turnEnd(){
-        /* ballLeft is compared with TotalBall to handle the case
-         * that at the start of the game, there is no ball on the screen.
-         */
-
-        return balls.size() == 0 && ballLeft != TotalBall;
     }
 
     /*
      *
      */
-    private void nextTurn(){
-        ballLeft--;
+    private void nextTurn() {
         LOGGER.log(Level.INFO, String.format("New turn started. %d balls left\n", ballLeft));
-        onScreen.removeAll(currBoard.asList());
+        onScreen.clear();
+        // Change the position of green peg it hasn't been destroyed.
         currBoard.refreshGreenPeg();
         onScreen.addAll(currBoard.asList());
-        onScreen.addAll(Powerup.createPowerup());
+        addGameObject(bucket);
+        addGameObject(Powerup.createPowerup());
     }
 
     /**
-     * Load boards from csv
+     * Load boards from csv files
      * @return An ArrayList of boards read from csv
      */
     private ArrayList<Board> loadBoards(){
@@ -217,5 +201,19 @@ public class ShadowBounce extends AbstractGame {
             boards.add(new Board(String.format("res/%d.csv", i)));
         }
         return boards;
+    }
+
+    public <T extends GameObject> void removeGameObject(T go){
+        this.toRemove.add(go);
+    }
+    public  <T extends GameObject> void removeGameObject(ArrayList<T> gameObjects){
+        this.toRemove.addAll(gameObjects);
+    }
+
+    public  <T extends GameObject> void addGameObject(T go){
+        this.toAdd.add(go);
+    }
+    public  <T extends GameObject> void addGameObject(ArrayList<T> gameObjects){
+        this.toAdd.addAll(gameObjects);
     }
 }

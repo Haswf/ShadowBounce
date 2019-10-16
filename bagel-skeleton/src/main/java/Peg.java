@@ -11,7 +11,7 @@ import java.util.AbstractMap;
  * @author Shuyang Fan
  */
 
-abstract public class Peg extends GameObject{
+abstract public class Peg extends GameObject implements OnCollisionEnter{
 
     public enum Colour {
         BLUE,
@@ -20,7 +20,7 @@ abstract public class Peg extends GameObject{
         GREEN,
     }
 
-   public enum Shape{
+    public enum Shape {
         NORMAL,
         HORIZONTAL,
         VERTICAL,
@@ -30,67 +30,54 @@ abstract public class Peg extends GameObject{
     private Colour colour;
 
     /**
-     *
      * @param centre
      * @param image
      * @param shape
      * @param colour
      */
-    public Peg(Point centre, Image image, Shape shape, Colour colour){
+    public Peg(Point centre, Image image, Shape shape, Colour colour) {
         super(centre, image);
         this.shape = shape;
         this.colour = colour;
     }
 
     /**
-     *
      * @return
      */
-    public String toString(){
+    public String toString() {
         return String.format("%s %s Peg (%f, %f)", this.shape.toString().toLowerCase(),
                 this.colour.toString().toLowerCase(),
                 this.getCenter().x, this.getCenter().y);
     }
 
-    /**
-     *
-     * @return
-     */
     public Colour getColour() {
         return colour;
     }
 
-    /**
-     *
-     * @return
-     */
-    public Shape getShape(){
+    public Shape getShape() {
         return this.shape;
     }
 
     /**
-     *
-     * @param Colour
+     * @param colour
      * @param shape
      * @return
      */
-    public static String imagePath(Peg.Colour Colour, Peg.Shape shape){
-        if (shape == Shape.NORMAL){
-            return "res/" + Colour.toString().toLowerCase() + "-peg.png";
-        }
-        else{
-            return "res/" + Colour.toString().toLowerCase() + "-" + shape.toString().toLowerCase() + "-peg.png";
+    public static String imagePath(Peg.Colour colour, Peg.Shape shape) {
+        if (shape == Shape.NORMAL) {
+            return "res/" + colour.toString().toLowerCase() + "-peg.png";
+        } else {
+            return "res/" + colour.toString().toLowerCase() + "-" + shape.toString().toLowerCase() + "-peg.png";
         }
     }
 
     /**
-     *
      * @param str
      * @return
      */
-    public static Peg.Colour parseColor(String str){
-        for (Peg.Colour Colour : Peg.Colour.values()){
-            if (str.contains(Colour.toString().toLowerCase())){
+    public static Peg.Colour parseColor(String str) {
+        for (Peg.Colour Colour : Peg.Colour.values()) {
+            if (str.contains(Colour.toString().toLowerCase())) {
                 return Colour;
             }
         }
@@ -98,13 +85,12 @@ abstract public class Peg extends GameObject{
     }
 
     /**
-     *
      * @param str
      * @return
      */
-    public static Peg.Shape parseShape(String str){
-        for (Peg.Shape shape : Peg.Shape.values()){
-            if (str.contains(shape.toString().toLowerCase())){
+    public static Peg.Shape parseShape(String str) {
+        for (Peg.Shape shape : Peg.Shape.values()) {
+            if (str.contains(shape.toString().toLowerCase())) {
                 return shape;
             }
         }
