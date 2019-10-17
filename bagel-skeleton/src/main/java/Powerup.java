@@ -20,7 +20,7 @@ public class Powerup extends GameObject implements OnCollisionEnter {
     private Point destination;
 
     /**
-     * Poweru[ Constructor
+     * Powerup Constructor.
      */
     public Powerup(){
         // Choose a random point on the screen as position
@@ -32,7 +32,7 @@ public class Powerup extends GameObject implements OnCollisionEnter {
 
     /**
      * Gets a random point on the screen
-     * @return Point a random point on the screen
+     * @return a random point on the screen
      */
     private static Point nextPoint(){
         Random random = new Random();
@@ -40,8 +40,8 @@ public class Powerup extends GameObject implements OnCollisionEnter {
     }
 
     /**
-     *
-     * @return
+     * Creates a powerup by chance
+     * @return a ArrayList of powerup, which may or may not contain a powerup.
      */
     public static ArrayList<Powerup> createPowerup(){
         ArrayList<Powerup> powerups = new ArrayList<>();
@@ -59,7 +59,7 @@ public class Powerup extends GameObject implements OnCollisionEnter {
      */
 
     public void move(){
-        // Move the object based on its velocity
+        // Call parent's move to set position of the object based on its velocity
         super.move();
 
         // choose next destination if the the powerup is within 5 pixels of its destination
@@ -69,6 +69,12 @@ public class Powerup extends GameObject implements OnCollisionEnter {
         }
     }
 
+    /**
+     * Specifics powerup's behaviour when it collided with other GameObject.
+     * @param game an instance of ShadowBounce.
+     * @param col another GameObject which hit this powerup.
+     * @param <T> The other party of the collision might be a subclass of GameObject.
+     */
     @Override
     public <T extends GameObject> void onCollisionEnter(ShadowBounce game, T col) {
         ShadowBounce.LOGGER.log(Level.INFO, "Powerup hit\n");

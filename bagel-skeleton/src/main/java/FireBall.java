@@ -1,7 +1,7 @@
 import bagel.Image;
 
 /**
- *
+ * Fireball class which defines creation of fireball,
  */
 public class FireBall extends Ball implements Destroyable {
     // The range of explosion in pixels within which all pegs of the struck peg’s centre are destroyed.
@@ -24,6 +24,10 @@ public class FireBall extends Ball implements Destroyable {
         }
     }
 
+    /**
+     * Requires the game to destroy itself.
+     * @param game an instance of ShadowBounce
+     */
     @Override
     public void destroy(ShadowBounce game) {
         game.removeGameObject(this);

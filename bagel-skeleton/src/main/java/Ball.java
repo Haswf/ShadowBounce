@@ -12,9 +12,11 @@ import java.util.logging.Logger;
  * @author Shuyang Fan
  */
 public class Ball extends GameObject implements OnCollisionEnter{
+    // initial position of the ball.
     private static final Point INIT_POSITION = new Point(512, 32);
+    // Initial speed of the ball.
     private static final double INIT_SPEED = 10.0;
-    // Acceleration due to gravity
+    // Acceleration due to gravity.
     private static final double GRAVITY = 0.15;
 
     /**
