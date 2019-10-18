@@ -3,6 +3,7 @@ import bagel.util.Point;
 import bagel.util.Side;
 import bagel.util.Vector2;
 
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -11,7 +12,8 @@ import java.util.logging.Logger;
  *
  * @author Shuyang Fan
  */
-public class Ball extends GameObject implements OnCollisionEnter{
+public class Ball extends GameObject implements OnCollisionEnter, Destroyable{
+    public static final float DUPLICATE_SPEED = 10;
     // initial position of the ball.
     private static final Point INIT_POSITION = new Point(512, 32);
     // Initial speed of the ball.
@@ -44,15 +46,14 @@ public class Ball extends GameObject implements OnCollisionEnter{
     }
 
     /**
-     * Applies gravitational acceleration specified as GRAVITY.
+     * Applies gravitational acceleration defined as GRAVITY.
      */
     private void applyGravity(){
         setVelocity(getVelocity().add(Vector2.down.mul(GRAVITY)));
     }
 
     /**
-     * Changes the velocity of the ball according to on which the
-     * collision occurs.
+     * Changes the velocity of the ball based on which the collision occurs.
      * @param collisionSide which side of the rectangle the ball intersected at
      */
     private void bounce(Side collisionSide){
@@ -92,7 +93,7 @@ public class Ball extends GameObject implements OnCollisionEnter{
 
     /**
      * Defines the behaviour to trigger when the ball was hit by
-     * other GameObject.
+     * other GameObject. For a ball, it will bounce off.
      * @param col The other GameObject that hit the ball.
      * @param <T> The other GameObject must be able to move.
      */
@@ -100,9 +101,29 @@ public class Ball extends GameObject implements OnCollisionEnter{
     public <T extends GameObject> void onCollisionEnter(ShadowBounce game, T col){
         if (col instanceof Peg){
             bounce(col.collideAtSide(this));
+            if (col instanceof GreenPeg){
+                ShadowBounce.LOGGER.log(Level.INFO, "Bonus balls released\n");
+                game.addGameObject(duplicate());
+            }
+        }
+        else if (col instanceof Powerup){
+            destroy(game);
+        }
+        else if (col instanceof Bucket){
+            destroy(game);
         }
     }
 
+    /**
+    @ Override
+    public void destroy(ShadowBounce game) {
+        game.removeGameObject(this);
+    }
+
+    /**
+     *
+     * @param game an instance of ShadowBounce
+     */
     @ Override
     public void update(ShadowBounce game){
         super.update(game);
@@ -110,5 +131,17 @@ public class Ball extends GameObject implements OnCollisionEnter{
         if (outOfScreen()) {
             game.removeGameObject(this);
         }
+    }
+
+    public ArrayList<Ball> duplicate(){
+        ArrayList<Ball> dups = new ArrayList<>();
+        dups.add(new Ball(getCenter(), getImage(), Vector2.up.add(Vector2.left).mul(DUPLICATE_SPEED)));
+        dups.add(new Ball(getCenter(), getImage(), Vector2.up.add(Vector2.right).mul(DUPLICATE_SPEED)));
+        return dups;
+    }
+
+    @Override
+    public void destroy(ShadowBounce game) {
+        game.removeGameObject(this);
     }
 }

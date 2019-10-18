@@ -1,18 +1,15 @@
 import bagel.*;
 import bagel.util.Point;
 
-import java.util.AbstractMap;
-
 /**
  * A class representing peg in ShadowBounce.
- * Peg is a child class of GameObject.
- * It currently doesn't have any own attribute.
- * Peg is designed to be a class for future expandability.
  * @author Shuyang Fan
  */
 
-abstract public class Peg extends GameObject implements OnCollisionEnter{
-
+abstract public class Peg extends GameObject{
+    /**
+     * Enum stands for colour of peg
+     */
     public enum Colour {
         BLUE,
         RED,
@@ -20,6 +17,9 @@ abstract public class Peg extends GameObject implements OnCollisionEnter{
         GREEN,
     }
 
+    /**
+     * Enum stands for shape of peg
+     */
     public enum Shape {
         NORMAL,
         HORIZONTAL,
@@ -30,7 +30,8 @@ abstract public class Peg extends GameObject implements OnCollisionEnter{
     private Colour colour;
 
     /**
-     * @param centre
+     * Peg Constructor
+     * @param centre centre point of the peg rectangle
      * @param image
      * @param shape
      * @param colour
@@ -42,7 +43,8 @@ abstract public class Peg extends GameObject implements OnCollisionEnter{
     }
 
     /**
-     * @return
+     * Returns a string representation of the peg.
+     * @return a string representation of the peg.
      */
     public String toString() {
         return String.format("%s %s Peg (%f, %f)", this.shape.toString().toLowerCase(),
@@ -50,18 +52,26 @@ abstract public class Peg extends GameObject implements OnCollisionEnter{
                 this.getCenter().x, this.getCenter().y);
     }
 
+    /**
+     * Gets colour of a peg.
+     * @return colour of a peg.
+     */
     public Colour getColour() {
         return colour;
     }
 
+    /**
+     * Gets shape of a peg.
+     * @return shape of a peg.
+     */
     public Shape getShape() {
-        return this.shape;
+        return shape;
     }
 
-    /**
-     * @param colour
-     * @param shape
-     * @return
+    /** Creates a image path based on colour and shape
+     * @param colour the colour of the peg
+     * @param shape the shape of the peg
+     * @return an string of image path
      */
     public static String imagePath(Peg.Colour colour, Peg.Shape shape) {
         if (shape == Shape.NORMAL) {
@@ -71,8 +81,8 @@ abstract public class Peg extends GameObject implements OnCollisionEnter{
         }
     }
 
-    /**
-     * @param str
+    /** Parse colour from a string.
+     * @param str input string to be parsed.
      * @return
      */
     public static Peg.Colour parseColor(String str) {
@@ -84,8 +94,8 @@ abstract public class Peg extends GameObject implements OnCollisionEnter{
         return Peg.Colour.BLUE;
     }
 
-    /**
-     * @param str
+    /** Parse shape from a string.
+     * @param str input string to be parsed.
      * @return
      */
     public static Peg.Shape parseShape(String str) {

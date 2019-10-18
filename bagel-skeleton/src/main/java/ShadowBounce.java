@@ -1,16 +1,17 @@
 import bagel.*;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * An arcade
- * @author Shuyang Fan
+ * An arcade game developed in Bagel for SWEN20003 Project 2.
+ * @author Shuyang Fan, shuyangf@student.unimelb.edu.au
  */
 public class ShadowBounce extends AbstractGame {
-    // Get global logger for debug
     private final static int TOTAL_BOARDS = 5;
     private final static int TOTAL_BALLS = 20;
+    // Get global logger for logging
     public final static Logger LOGGER =
             Logger.getLogger(Logger.GLOBAL_LOGGER_NAME);
 
@@ -35,7 +36,11 @@ public class ShadowBounce extends AbstractGame {
     private ArrayList<GameObject> toRemove;
     // A flap indicating this turn has ended
     private boolean turnEnd;
-    /* ShadowBounce */
+
+    /**
+     * ShadowBounce Constructor
+     * Initialise the game.
+     */
     public ShadowBounce() {
         // Instantiate toAdd and toRemove .
         toAdd = new ArrayList<>();
@@ -57,18 +62,28 @@ public class ShadowBounce extends AbstractGame {
 
         powerups = new ArrayList<>();
         addGameObject(Powerup.createPowerup());
-
-
     }
 
+    /**
+     * Returns the number of balls(turns) left.
+     * @return the number of balls(turns) left
+     */
     public int getBallLeft(){
         return ballLeft;
     }
 
+    /**
+     * Sets the number of balls left.
+     * @param left the number of balls(turns) left
+     */
     public void setBallLeft(int left){
         this.ballLeft = left;
     }
 
+    /**
+     * Gets the board currently on the screen.
+     * @return a board on the screen.
+     */
     public Board getCurrBoard() {
         return currBoard;
     }
@@ -80,8 +95,8 @@ public class ShadowBounce extends AbstractGame {
     }
 
     /**
-     * Performs a state update. This simple example shows an image that can be controlled with the arrow keys, and
-     * allows the game to exit when the escape key is pressed.
+     * update is called once per frame.
+     * @param input Bagel input
      */
     @Override
     public void update(Input input) {
@@ -107,7 +122,9 @@ public class ShadowBounce extends AbstractGame {
             for (Peg peg : currBoard.asList()) {
                 if (ball.collideWith(peg)) {
                     ball.onCollisionEnter(this, peg);
-                    peg.onCollisionEnter(this, ball);
+                    if (peg instanceof OnCollisionEnter){
+                        ((OnCollisionEnter)peg).onCollisionEnter(this, ball);
+                    }
                 }
             }
             /* Conduct collision detection for each ball and each powerup
@@ -116,6 +133,7 @@ public class ShadowBounce extends AbstractGame {
             for (Powerup powerup : powerups) {
                 if (ball.collideWith(powerup)) {
                     powerup.onCollisionEnter(this, ball);
+                    ball.onCollisionEnter(this, powerup);
                 }
             }
             /* Conduct collision detection for each ball and the bucket
@@ -123,10 +141,13 @@ public class ShadowBounce extends AbstractGame {
             */
             if (ball.collideWith(bucket)){
                 bucket.onCollisionEnter(this, ball);
+                ball.onCollisionEnter(this, bucket);
             }
         }
 
+        // Add GameObject in toAdd to onScreen.
         addToScreen();
+        // Remove GameObject in toRemove from onScreen.
         removeFromScreen();
 
         // Start next turn
@@ -143,9 +164,12 @@ public class ShadowBounce extends AbstractGame {
         // Call update method for each GameObject on the screen.
         for (GameObject g : onScreen) {
             g.update(this);
-            }
         }
+    }
 
+    /**
+     * Loads next board into screen.
+     */
     private void loadNextBoard () {
         if (boardIter.hasNext()) {
             // Remove remaining pegs from the screen.
@@ -185,7 +209,7 @@ public class ShadowBounce extends AbstractGame {
     }
 
     /**
-     * Add each object in ToAdd to Screen
+     * Add GameObject in ToAdd to onScreen
      */
     private void addToScreen () {
         for (GameObject go : toAdd) {
@@ -205,7 +229,7 @@ public class ShadowBounce extends AbstractGame {
     }
 
     /*
-     *
+     * Change the position of green peg and attempts to create a powerup.
      */
     private void nextTurn() {
         LOGGER.log(Level.INFO, String.format("New turn started. %d balls left\n", ballLeft));

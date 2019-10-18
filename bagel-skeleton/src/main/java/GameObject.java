@@ -3,26 +3,24 @@ import bagel.util.Point;
 import bagel.util.Rectangle;
 import bagel.util.Side;
 import bagel.util.Vector2;
-
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Vector;
 
 /**
- * An abstract class representing
- * GameObject on the screen.
- * @author Shuyang Fan
+ * An abstract class representing GameObject on the screen.
+ * @author Shuyang Fan, shuyangf@student.unimelb.edu.au
  */
 
 abstract public class GameObject{
     private Image image;
     private Rectangle boundingBox;
+    // a static GameObject will have Vector2.Zero as velocity.
     private Vector2 velocity;
 
     /**
      * GameObject constructor with provided position, image.
-     * @param centre
-     * @param image
+     * By default, velocity is set to zero.
+     * @param centre the center of the GameObject
+     * @param image the image of the GameObject
      */
     public GameObject(Point centre, Image image) {
         this.image = image;
@@ -33,6 +31,12 @@ abstract public class GameObject{
         this.boundingBox.moveTo(computeTopLeft(centre));
     }
 
+    /**
+     * GameObject constructor with provided position, image and initial velocity.
+     * @param centre centre of the GameObject
+     * @param image image of the GameObject
+     * @param velocity initial velocity
+     */
     public GameObject(Point centre, Image image, Vector2 velocity) {
         this.image = image;
         // get bounding box from image
@@ -77,16 +81,24 @@ abstract public class GameObject{
         this.boundingBox.moveTo(computeTopLeft(center));
     }
 
+    /**
+     * Gets the velocity of a GameObject.
+     * @return a Vector2 representing a GameObject's velocity.
+     */
     public Vector2 getVelocity() {
         return velocity;
     }
 
+    /**
+     * Sets velocity of a GameObject.
+     * @param velocity velocity to be assigned.
+     */
     public void setVelocity(Vector2 velocity) {
         this.velocity = velocity;
     }
 
     /**
-     * Get bounding box of a GameObject.
+     * Gets bounding box of a GameObject.
      * @return a rectangle representing the bounding box of the GameObject.
      */
     public Rectangle getBoundingBox(){
@@ -94,26 +106,26 @@ abstract public class GameObject{
     }
 
     /**
-     * Return image of the GameObject
-     * @return the image of the GameObject
+     * Return the image of a GameObject
+     * @return the image of a GameObject
      */
     public Image getImage() {
         return this.image;
     }
 
     /**
-     * Return if
-     * @param other
-     * @return
+     * Return if two GameObjects interacts.
+     * @param other the other GameObject you want to test
+     * @return if two GameObjects interacts.
      */
     public boolean collideWith(GameObject other){
         return boundingBox.intersects(other.getBoundingBox());
     }
 
     /**
-     * Concude
-     * @param other a GameObject with which
-     * @param <T> any class that extends from GameObject and implements Movable interface
+     * Returns on which side the two GameObject interacts.
+     * @param other the other GameObject.
+     * @param <T> any class that extends from GameObject.
      * @return The Side indicating where the collision occurs. Returns None if no collision
      * will occur.
      */
@@ -121,22 +133,30 @@ abstract public class GameObject{
         return getBoundingBox().intersectedAt(getCenter(), other.getVelocity());
     }
 
-    /* Return distance from this GameObject to another. */
+    /**
+     * Returns the distance between this GameObject and the other.
+     * @param other the other GameObject.
+     * @return the distance between this GameObject and the other.
+     */
     public double distance(GameObject other){
         return other.getCenter().asVector().sub(this.getCenter().asVector()).length();
     }
 
-    /* Return distance from this GameObject to a point. */
+    /**
+     * Returns the distance between this GameObject and a point.
+     * @param other a point
+     * @return the distance between this GameObject and a point.
+     */
     public double distance(Point other){
         return other.asVector().sub(this.getCenter().asVector()).length();
     }
 
     /**
-     *
-     * @param objects
-     * @param distance
-     * @param <T>
-     * @return
+     * Filter out GameObjects that has distance smaller than a certain value.
+     * @param objects GameObject to be examined.
+     * @param distance the distance threshold.
+     * @param <T> objects must be a array of subclass of GameObject.
+     * @return an ArrayList of GameObjects
      */
     public <T extends GameObject> ArrayList<GameObject> withinRange(ArrayList<T> objects, float distance){
         ArrayList<GameObject> inRange = new ArrayList<>();
@@ -149,27 +169,37 @@ abstract public class GameObject{
     }
 
     /**
-     * Reverse horizontal direction
+     * Reverse horizontal direction of the GameObject.
      */
     public void reverseHorizontal() {
         this.velocity = new Vector2(-this.velocity.x, this.velocity.y);
     }
 
     /**
-     * Reverse vertical direction
+     * Reverse vertical direction of the GameObject.
      */
     public void reverseVertical() {
         this.velocity = new Vector2(this.velocity.x, -this.velocity.y);
     }
 
+    /**
+     * Move the GameObject based on its velocity.
+     */
     public void move(){
         setCenter(getCenter().asVector().add(velocity).asPoint());
     }
 
+    /**
+     * Draw the GameObject on the screen.
+     */
     private void render() {
         this.image.draw(getCenter().x, getCenter().y);
     }
 
+    /**
+     * Update the GameObject. This method should be called once per frame.
+     * @param shadowBounce an instance of ShadowBounce.
+     */
     public void update(ShadowBounce shadowBounce){
         move();
         render();
