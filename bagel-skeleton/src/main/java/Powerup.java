@@ -7,20 +7,23 @@ import java.util.Random;
 import java.util.logging.Level;
 
 /**
- *
+ * A class representing powerup in ShadowBounce.
+ * @author Shuyang Fan, shuyangf@student.unimelb.edu.au
  */
 public class Powerup extends GameObject implements OnCollisionEnter {
     // The chance that a powerup will be created at the start of each turn.
     private static final double CHANCE = 0.1;
-    // The minimum distance from destination
+    // The minimum distance from destination.
     private static final int MIN_DISTANCE = 5;
-    // Initial speed of the powerup
+    // Initial speed of the powerup.
     private static final int INIT_SPEED = 3;
-    // Current destination
+    // Current destination.
     private Point destination;
 
     /**
-     * Poweru[ Constructor
+     * Powerup Constructor.
+     * No argument is required as behaviour of
+     * a FireBall is defined by constants.
      */
     public Powerup(){
         // Choose a random point on the screen as position
@@ -32,7 +35,7 @@ public class Powerup extends GameObject implements OnCollisionEnter {
 
     /**
      * Gets a random point on the screen
-     * @return Point a random point on the screen
+     * @return a random point on the screen
      */
     private static Point nextPoint(){
         Random random = new Random();
@@ -40,8 +43,8 @@ public class Powerup extends GameObject implements OnCollisionEnter {
     }
 
     /**
-     *
-     * @return
+     * Creates a powerup by chance
+     * @return a ArrayList of powerup, which may or may not contain a powerup.
      */
     public static ArrayList<Powerup> createPowerup(){
         ArrayList<Powerup> powerups = new ArrayList<>();
@@ -57,9 +60,8 @@ public class Powerup extends GameObject implements OnCollisionEnter {
      * When the powerup is within 5 pixels of its destination,
      * it will choose another random position as new destination.
      */
-
     public void move(){
-        // Move the object based on its velocity
+        // Call parent's move to set position of the object based on its velocity
         super.move();
 
         // choose next destination if the the powerup is within 5 pixels of its destination
@@ -69,12 +71,17 @@ public class Powerup extends GameObject implements OnCollisionEnter {
         }
     }
 
+    /**
+     * Creates a fireball and destroy the incoming ball when a powerup was hit.
+     * @param game an instance of ShadowBounce.
+     * @param col another GameObject which hit this powerup.
+     * @param <T> The other party of the collision must be a subclass of GameObject.
+     */
     @Override
     public <T extends GameObject> void onCollisionEnter(ShadowBounce game, T col) {
         ShadowBounce.LOGGER.log(Level.INFO, "Powerup hit\n");
         if (col instanceof Ball){
             game.addGameObject(new FireBall((Ball)col));
-            game.removeGameObject(col);
             game.removeGameObject(this);
         }
     }
